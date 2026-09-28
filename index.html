@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>幻獸們｜MVP</title>
+<style>
+:root{
+  --bg:#f5f0e8; --card:#fffdf8; --ink:#2b2d35; --muted:#747681; --line:#ded8cf;
+  --accent:#6b7cff; --accent2:#9b72ff; --good:#2f9e6f; --warn:#d48a21;
+  --shadow:0 12px 28px rgba(42,45,58,.10);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;background:
+linear-gradient(180deg,#ebe7ff 0,#f5f0e8 28%,#f5f0e8 100%);color:var(--ink)}
+button{font:inherit}
+.wrap{max-width:1080px;margin:auto;padding:22px}
+header{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}
+.brand h1{margin:0;font-size:clamp(28px,5vw,48px);letter-spacing:.04em}
+.brand p{margin:4px 0 0;color:var(--muted)}
+.pill{background:#ffffffb8;border:1px solid #ffffff;padding:9px 14px;border-radius:999px;box-shadow:var(--shadow);font-weight:700}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:20px}
+.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}
+.hidden{display:none!important}
+.title{font-size:20px;font-weight:900;margin:0 0 14px}
+.egg-grid,.dex-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.egg{border:1px solid var(--line);background:#fff;border-radius:20px;padding:16px;text-align:center;cursor:pointer;transition:.2s;min-height:190px}
+.egg:hover{transform:translateY(-3px);box-shadow:0 10px 24px #00000012}
+.egg-art{font-size:78px;line-height:1.1;filter:drop-shadow(0 7px 8px #0002)}
+.egg h3{margin:8px 0 4px}.egg small{color:var(--muted)}
+.scene{min-height:340px;display:grid;place-items:center;background:
+radial-gradient(circle at 50% 85%,#ffffff 0 20%,#ebf0ff 21% 50%,transparent 51%),
+linear-gradient(#dff1ff 0 65%,#dff4e8 65%);border-radius:22px;border:1px solid var(--line);position:relative;overflow:hidden}
+.scene:before,.scene:after{content:"";position:absolute;border-radius:50%;background:#fff8;filter:blur(1px)}
+.scene:before{width:120px;height:34px;left:8%;top:14%}.scene:after{width:160px;height:40px;right:8%;top:24%}
+.creature{z-index:2;text-align:center}
+.creature .big{font-size:116px;display:block;animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-7px)}}
+.creature-name{font-size:24px;font-weight:900;margin-top:8px}
+.type-tag{display:inline-block;margin-top:6px;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:13px;font-weight:800}
+.stats{display:grid;gap:12px}
+.stat-row{display:grid;grid-template-columns:72px 1fr 44px;align-items:center;gap:10px}
+.bar{height:12px;background:#ece9e3;border-radius:999px;overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:inherit;transition:.25s}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.action,.main-btn,.ghost-btn{border:0;border-radius:16px;padding:14px 16px;font-weight:900;cursor:pointer}
+.action{background:#fff;border:1px solid var(--line);box-shadow:0 5px 12px #00000009}
+.action:hover{transform:translateY(-1px)}
+.main-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white}
+.ghost-btn{background:#fff;border:1px solid var(--line)}
+.log{margin-top:14px;padding:12px 14px;border-radius:16px;background:#f3f1ec;color:#595b66;min-height:48px}
+.dex-card{position:relative;border:1px solid var(--line);border-radius:18px;background:#fff;padding:12px;text-align:center;min-height:190px}
+.dex-card.locked{filter:grayscale(1)}
+.dex-card .icon{font-size:62px}
+.dex-card.locked .icon{filter:brightness(0);opacity:.18}
+.dex-card h4{margin:8px 0 3px}
+
+/* 幻彩卡片：七彩霓虹感 */
+.dex-card.prism{
+  border:2px solid transparent;
+  background:
+    linear-gradient(#fff,#fff) padding-box,
+    linear-gradient(135deg,#ff5fa2 0%,#ffd45f 18%,#82ff9e 36%,#67e8ff 54%,#7a7cff 72%,#d36bff 88%,#ff5fa2 100%) border-box;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.75) inset,
+    0 0 12px rgba(255,95,162,.22),
+    0 0 18px rgba(103,232,255,.20),
+    0 0 26px rgba(122,124,255,.16);
+  overflow:hidden;
+}
+.dex-card.prism::before{
+  content:"";
+  position:absolute;
+  inset:-30%;
+  background:conic-gradient(from 0deg,#ff5fa2,#ffd45f,#82ff9e,#67e8ff,#7a7cff,#d36bff,#ff5fa2);
+  opacity:.16;
+  filter:blur(18px);
+  animation:prismSpin 9s linear infinite;
+  pointer-events:none;
+}
+.dex-card.prism::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.00) 32%,rgba(255,255,255,.45) 50%,rgba(255,255,255,.00) 68%,transparent 100%);
+  transform:translateX(-130%);
+  animation:prismSweep 4.5s ease-in-out infinite;
+  pointer-events:none;
+}
+.dex-card.prism > *{position:relative;z-index:1}
+.dex-card.prism .icon{
+  filter:drop-shadow(0 0 10px rgba(255,113,196,.30)) drop-shadow(0 0 16px rgba(103,232,255,.26));
+}
+.dex-card.prism .rarity{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#fff4fb,#f5efff);
+  box-shadow:0 0 10px rgba(211,107,255,.18);
+}
+.dex-card.prism.locked{
+  filter:none;
+  opacity:.88;
+}
+.dex-card.prism.locked .icon{
+  filter:brightness(0) opacity(.16);
+}
+.dex-card.prism.locked::before{
+  opacity:.10;
+}
+@keyframes prismSpin{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
+}
+@keyframes prismSweep{
+  0%,65%,100%{transform:translateX(-130%)}
+  82%{transform:translateX(130%)}
+}
+.prism-stars{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  overflow:hidden;
+}
+.prism-stars i{
+  position:absolute;
+  width:4px;height:4px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 0 6px #fff,0 0 11px #9cf,0 0 16px #f9c;
+  opacity:0;
+  animation:prismTwinkle 2.6s ease-in-out infinite;
+}
+.prism-stars i:nth-child(1){left:14%;top:20%;animation-delay:.1s}
+.prism-stars i:nth-child(2){left:78%;top:18%;animation-delay:.7s}
+.prism-stars i:nth-child(3){left:28%;top:64%;animation-delay:1.2s}
+.prism-stars i:nth-child(4){left:70%;top:72%;animation-delay:1.8s}
+.prism-stars i:nth-child(5){left:48%;top:12%;animation-delay:2.1s}
+.prism-stars i:nth-child(6){left:88%;top:50%;animation-delay:1.45s}
+.prism-stars i:nth-child(7){left:8%;top:78%;animation-delay:2.35s}
+@keyframes prismTwinkle{
+  0%,100%{transform:scale(.25);opacity:0}
+  35%{opacity:.35}
+  50%{transform:scale(1.9);opacity:1}
+  68%{opacity:.25}
+}
+@media (prefers-reduced-motion: reduce){
+  .dex-card.prism::before,.dex-card.prism::after,.prism-stars i{animation:none!important}
+  .prism-stars i{opacity:.6}
+}
+.dex-toolbar{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+.dex-tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 14px;font-weight:900;cursor:pointer}
+.dex-tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.dex-section{margin-top:22px}
+.dex-section:first-child{margin-top:16px}
+.dex-section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.dex-section-title{margin:0;font-size:20px;font-weight:950}
+.dex-progress{font-size:13px;color:var(--muted);font-weight:800}
+.dex-subprogress{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+.dex-subprogress span{padding:6px 10px;border-radius:999px;background:#f3f1ec;border:1px solid var(--line);font-size:12px;font-weight:800}
+.dex-divider{height:1px;background:var(--line);margin:22px 0 0}
+.meta{font-size:12px;color:var(--muted)}
+.rarity{font-weight:900}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.legend span{padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:12px}
+.hatch-card{text-align:center;padding:10px}
+.hatch-icon{font-size:112px;animation:pop .55s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{from{transform:scale(.2) rotate(-8deg);opacity:0}to{transform:scale(1);opacity:1}}
+.two{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.notice{font-size:13px;color:var(--muted);margin-top:10px}
+footer{padding:16px 0 6px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:980px){
+ .egg-grid,.dex-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:780px){
+ .wrap{padding:14px}.grid{grid-template-columns:1fr}.egg-grid,.dex-grid{grid-template-columns:1fr}
+ .egg{min-height:0}.actions{grid-template-columns:1fr}.scene{min-height:290px}
+ header{align-items:flex-start;flex-direction:column}.pill{align-self:flex-start}
+ .dex-toolbar{display:grid;grid-template-columns:repeat(3,1fr);width:100%}
+ .dex-tab{width:100%;padding:10px 8px}
+ .dex-section-head{align-items:flex-start;flex-direction:column}
+}
+
+.status-top{
+  margin-bottom:18px;
+  min-height:120px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+.status-top .log{
+  width:100%;
+  margin:0;
+  min-height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  font-weight:800;
+}
+.actions{
+  grid-template-columns:repeat(3,minmax(150px,1.5fr)) !important;
+  justify-content:center;
+}
+.action{
+  min-width:150px;
+}
+@media(max-width:780px){
+  .actions{grid-template-columns:1fr !important;}
+  .action{width:100%;min-width:0;}
+}
+
+
+/* 手機優先：確保選蛋區在 iPhone / Safari 可見且可點擊 */
+#screen-start{
+  display:block;
+  width:100%;
+  overflow:visible;
+}
+
+#eggGrid{
+  width:100%;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  overflow:visible;
+}
+
+#eggGrid .egg{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-width:0;
+  min-height:190px;
+  visibility:visible;
+  opacity:1;
+  -webkit-appearance:none;
+  appearance:none;
+  touch-action:manipulation;
+  position:relative;
+  z-index:1;
+}
+
+#eggGrid .egg:active{
+  transform:scale(.98);
+}
+
+@media(max-width:980px){
+  #eggGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:600px){
+  .wrap{
+    width:100%;
+    max-width:none;
+    padding:12px;
+    overflow:visible;
+  }
+
+  #screen-start{
+    padding:14px;
+    min-height:0;
+  }
+
+  #eggGrid{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:12px;
+    width:100%;
+    min-height:0;
+    overflow:visible;
+  }
+
+  #eggGrid .egg{
+    display:flex !important;
+    width:100% !important;
+    min-height:132px;
+    padding:16px;
+    overflow:visible;
+  }
+
+  #eggGrid .egg-art{
+    font-size:64px;
+  }
+
+  #eggGrid .egg h3{
+    margin:8px 0 0;
+    font-size:20px;
+  }
+
+  header{
+    margin-bottom:12px;
+  }
+
+  .brand h1{
+    font-size:32px;
+  }
+
+  .panel{
+    border-radius:18px;
+  }
+}
+
+
+@supports(padding:max(0px)){
+  body{
+    padding-left:env(safe-area-inset-left);
+    padding-right:env(safe-area-inset-right);
+  }
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand">
+    <h1>幻獸們</h1>
+    <p>選蛋、照顧、孵化，收集屬於你的幻獸圖鑑。</p>
+  </div>
+  <div class="pill">MVP · 本機存檔</div>
+</header>
+
+<section id="screen-start" class="panel">
+  <h2 class="title">選擇一顆幻獸蛋</h2>
+  <div class="egg-grid" id="eggGrid"></div>
+  
+</section>
+
+<section id="status-panel" class="panel status-top hidden">
+  <div class="log" id="log">蛋正在孵化……</div>
+</section>
+
+<section id="screen-care" class="grid hidden">
+  <div class="panel">
+    <h2 class="title">培育室</h2>
+    <div class="scene">
+      <div class="creature">
+        <span class="big" id="careIcon">🥚</span>
+        <div class="creature-name" id="eggName">幻獸蛋</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="action" type="button" data-act="feed">🍎 餵食</button>
+      <button class="action" type="button" data-act="play">🪁 玩耍</button>
+      <button class="action" type="button" data-act="rest">🌙 休息</button>
+    </div>
+    
+  </div>
+  <div class="panel">
+    <h2 class="title">成長狀態</h2>
+    <div class="stats" id="stats"></div>
+    <div style="margin-top:18px">
+      <div class="meta">培育傾向</div>
+      <div id="careTendency" style="font-weight:900;margin-top:4px">尚未形成</div>
+    </div>
+    <button class="ghost-btn" id="abandonBtn" style="width:100%;margin-top:18px">放棄本次培育</button>
+  </div>
+</section>
+
+<section id="screen-hatch" class="panel hidden">
+  <div class="hatch-card">
+    <div style="font-weight:900;color:var(--accent)">孵化成功</div>
+    <div class="hatch-icon" id="hatchIcon">🐉</div>
+    <h2 id="hatchName" style="margin:0"></h2>
+    <div id="hatchMeta" style="margin-top:8px;color:var(--muted)"></div>
+    <p id="hatchDesc"></p>
+    <div class="two">
+      <button class="main-btn" id="toDexBtn">收錄並查看圖鑑</button>
+      <button class="ghost-btn" id="newRunBtn">重新培育</button>
+    </div>
+  </div>
+</section>
+
+<section id="screen-dex" class="panel hidden" style="margin-top:18px">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+    <h2 class="title" style="margin:0">幻獸圖鑑</h2>
+    <button class="main-btn" id="dexNewBtn">培育新的幻獸</button>
+  </div>
+  <div class="dex-toolbar" id="dexTabs" aria-label="圖鑑分類">
+    <button class="dex-tab active" data-dex-filter="all">全部</button>
+    <button class="dex-tab" data-dex-filter="fire">🔥 火</button>
+    <button class="dex-tab" data-dex-filter="water">💧 水</button>
+    <button class="dex-tab" data-dex-filter="wind">🍃 風</button>
+    <button class="dex-tab" data-dex-filter="forest">🌿 森</button>
+    <button class="dex-tab" data-dex-filter="prism">🌈 幻彩</button>
+  </div>
+  <div id="dexGrid"></div>
+</section>
+
+<footer>資料只儲存在你的瀏覽器 Local Storage。清除瀏覽器網站資料會一併清除圖鑑。</footer>
+</div>
+
+<script>
+const TYPES = {
+  fire:{name:"火",icon:"🔥"}, water:{name:"水",icon:"💧"}, wind:{name:"風",icon:"🍃"},
+  earth:{name:"土",icon:"⛰️"}, light:{name:"光",icon:"✨"}, dark:{name:"暗",icon:"🌑"}
+};
+
+const EGGS = [
+  {id:"ember", name:"赤紋蛋", icon:"🥚", main:"fire", special:"light", note:"火系蛋 · 含有光之可能"},
+  {id:"tide", name:"潮汐蛋", icon:"🥚", main:"water", special:"dark", note:"水系蛋 · 含有暗之可能"},
+  {id:"gale", name:"風羽蛋", icon:"🥚", main:"wind", special:"light", note:"風系蛋 · 含有光之可能"},
+  {id:"terra", name:"岩土蛋", icon:"🥚", main:"earth", special:"dark", note:"土系蛋 · 含有暗之可能"}
+];
+
+const BEASTS = [
+  {id:"flarecub", name:"焰尾幼獅", icon:"🦁", type:"fire", rarity:"普通", likes:"feed", desc:"體內帶著溫暖火息，培育方式會影響火紋亮度。"},
+  {id:"cindercat", name:"燼爪貓", icon:"🐈", type:"fire", rarity:"普通", likes:"play", desc:"體內帶著溫暖火息，培育方式會影響火紋亮度。"},
+  {id:"coalpup", name:"炭耳犬", icon:"🐕", type:"fire", rarity:"普通", likes:"energy", desc:"體內帶著溫暖火息，培育方式會影響火紋亮度。"},
+  {id:"sparkmouse", name:"火花鼠", icon:"🐁", type:"fire", rarity:"普通", likes:"bond_high", desc:"體內帶著溫暖火息，培育方式會影響火紋亮度。"},
+  {id:"magmahog", name:"熔岩小豬", icon:"🐗", type:"fire", rarity:"普通", likes:"feed_high", desc:"體內帶著溫暖火息，培育方式會影響火紋亮度。"},
+  {id:"torchbird", name:"炬羽鳥", icon:"🐦", type:"fire", rarity:"普通", likes:"mood_high", desc:"體內帶著溫暖火息，培育方式會影響火紋亮度。"},
+  {id:"ashram", name:"灰角羊", icon:"🐏", type:"fire", rarity:"普通", likes:"energy_high", desc:"體內帶著溫暖火息，培育方式會影響火紋亮度。"},
+  {id:"embergecko", name:"赤焰壁虎", icon:"🦎", type:"fire", rarity:"普通", likes:"bond_low", desc:"體內帶著溫暖火息，培育方式會影響火紋亮度。"},
+  {id:"bubbleotter", name:"泡泡水獺", icon:"🦦", type:"water", rarity:"普通", likes:"rest", desc:"身上帶著水氣與潮聲，個性通常較柔和。"},
+  {id:"reefseal", name:"珊潮海豹", icon:"🦭", type:"water", rarity:"普通", likes:"energy", desc:"身上帶著水氣與潮聲，個性通常較柔和。"},
+  {id:"mistjelly", name:"霧光水母", icon:"🪼", type:"water", rarity:"普通", likes:"mood_high", desc:"身上帶著水氣與潮聲，個性通常較柔和。"},
+  {id:"brookfrog", name:"溪語蛙", icon:"🐸", type:"water", rarity:"普通", likes:"bond_low", desc:"身上帶著水氣與潮聲，個性通常較柔和。"},
+  {id:"shellcrab", name:"藍殼蟹", icon:"🦀", type:"water", rarity:"普通", likes:"feed", desc:"身上帶著水氣與潮聲，個性通常較柔和。"},
+  {id:"wavepenguin", name:"浪紋企鵝", icon:"🐧", type:"water", rarity:"普通", likes:"play", desc:"身上帶著水氣與潮聲，個性通常較柔和。"},
+  {id:"dewfish", name:"露珠魚", icon:"🐟", type:"water", rarity:"普通", likes:"energy_high", desc:"身上帶著水氣與潮聲，個性通常較柔和。"},
+  {id:"rainaxolotl", name:"雨鰓螈", icon:"🦎", type:"water", rarity:"普通", likes:"bond_high", desc:"身上帶著水氣與潮聲，個性通常較柔和。"},
+  {id:"galefox", name:"風鈴狐", icon:"🦊", type:"wind", rarity:"普通", likes:"play", desc:"動作輕快，會隨情緒帶起細小氣流。"},
+  {id:"skysquirrel", name:"翔葉飛鼠", icon:"🐿️", type:"wind", rarity:"普通", likes:"energy", desc:"動作輕快，會隨情緒帶起細小氣流。"},
+  {id:"cloudhare", name:"雲耳兔", icon:"🐇", type:"wind", rarity:"普通", likes:"mood_high", desc:"動作輕快，會隨情緒帶起細小氣流。"},
+  {id:"feathercat", name:"羽尾貓", icon:"🐈", type:"wind", rarity:"普通", likes:"bond_high", desc:"動作輕快，會隨情緒帶起細小氣流。"},
+  {id:"gustfinch", name:"旋風雀", icon:"🐦", type:"wind", rarity:"普通", likes:"play_high", desc:"動作輕快，會隨情緒帶起細小氣流。"},
+  {id:"breezedeer", name:"輕風鹿", icon:"🦌", type:"wind", rarity:"普通", likes:"rest", desc:"動作輕快，會隨情緒帶起細小氣流。"},
+  {id:"kiteferret", name:"紙鳶雪貂", icon:"🦦", type:"wind", rarity:"普通", likes:"energy_high", desc:"動作輕快，會隨情緒帶起細小氣流。"},
+  {id:"whirlhamster", name:"旋葉倉鼠", icon:"🐹", type:"wind", rarity:"普通", likes:"bond_low", desc:"動作輕快，會隨情緒帶起細小氣流。"},
+  {id:"pebblemole", name:"礫背土撥鼠", icon:"🦫", type:"earth", rarity:"普通", likes:"rest", desc:"身軀帶有岩土質感，穩定而耐心。"},
+  {id:"stoneboar", name:"石甲野豬", icon:"🐗", type:"earth", rarity:"普通", likes:"feed", desc:"身軀帶有岩土質感，穩定而耐心。"},
+  {id:"sandfox", name:"砂尾狐", icon:"🦊", type:"earth", rarity:"普通", likes:"energy", desc:"身軀帶有岩土質感，穩定而耐心。"},
+  {id:"claybear", name:"陶甲小熊", icon:"🐻", type:"earth", rarity:"普通", likes:"bond_high", desc:"身軀帶有岩土質感，穩定而耐心。"},
+  {id:"orebeetle", name:"礦晶甲蟲", icon:"🪲", type:"earth", rarity:"普通", likes:"energy_high", desc:"身軀帶有岩土質感，穩定而耐心。"},
+  {id:"duneturtle", name:"沙丘龜", icon:"🐢", type:"earth", rarity:"普通", likes:"rest_high", desc:"身軀帶有岩土質感，穩定而耐心。"},
+  {id:"rockgoat", name:"岩角羊", icon:"🐐", type:"earth", rarity:"普通", likes:"feed_high", desc:"身軀帶有岩土質感，穩定而耐心。"},
+  {id:"mudhippo", name:"泥團河馬", icon:"🦛", type:"earth", rarity:"普通", likes:"bond_low", desc:"身軀帶有岩土質感，穩定而耐心。"},
+  {id:"sunphoenix", name:"曦羽鳥", icon:"🦅", type:"fire", rarity:"稀有", likes:"balanced", desc:"體內帶著溫暖火息，培育方式會影響火紋亮度。 屬於較少見的個體。"},
+  {id:"volcanolynx", name:"炎脈山貓", icon:"🐆", type:"fire", rarity:"稀有", likes:"bond_high", desc:"體內帶著溫暖火息，培育方式會影響火紋亮度。 屬於較少見的個體。"},
+  {id:"tidewhale", name:"潮歌幼鯨", icon:"🐋", type:"water", rarity:"稀有", likes:"energy_high", desc:"身上帶著水氣與潮聲，個性通常較柔和。 屬於較少見的個體。"},
+  {id:"abyssray", name:"深潮魟", icon:"🐟", type:"water", rarity:"稀有", likes:"bond_high", desc:"身上帶著水氣與潮聲，個性通常較柔和。 屬於較少見的個體。"},
+  {id:"stormowl", name:"鳴風梟", icon:"🦉", type:"wind", rarity:"稀有", likes:"balanced", desc:"動作輕快，會隨情緒帶起細小氣流。 屬於較少見的個體。"},
+  {id:"tempestgryph", name:"疾空幼鷲", icon:"🦅", type:"wind", rarity:"稀有", likes:"mood_high", desc:"動作輕快，會隨情緒帶起細小氣流。 屬於較少見的個體。"},
+  {id:"crystalyak", name:"晶角犛牛", icon:"🐂", type:"earth", rarity:"稀有", likes:"energy_high", desc:"身軀帶有岩土質感，穩定而耐心。 屬於較少見的個體。"},
+  {id:"mountainstag", name:"岳冠鹿", icon:"🦌", type:"earth", rarity:"稀有", likes:"balanced", desc:"身軀帶有岩土質感，穩定而耐心。 屬於較少見的個體。"},
+  {id:"prismdrake", name:"稜光幼龍", icon:"🐉", type:"light", rarity:"幻彩", likes:"balanced", desc:"極少見的光屬幻獸，鱗片會折射七彩光澤。"},
+  {id:"lumicorn", name:"晨星獨角獸", icon:"🦄", type:"light", rarity:"幻彩", likes:"bond_high", desc:"光芒集中在額角，對高親密培育特別敏感。"},
+  {id:"noctbat", name:"夜幕翼獸", icon:"🦇", type:"dark", rarity:"幻彩", likes:"energy_high", desc:"只在狀態極佳時偶爾現身的暗屬幻獸。"},
+  {id:"eclipsecat", name:"蝕月靈貓", icon:"🐈‍⬛", type:"dark", rarity:"幻彩", likes:"mood_high", desc:"身上的暗紋如月蝕流動，極難孵化。"},
+];
+
+// 每種蛋都有自己的常規幻獸池。
+// 幻彩幻獸不屬於單一蛋池，而是所有蛋都有低機率孵出的共通稀有結果。
+const EGG_POOLS = {
+  "ember": [
+    "flarecub",
+    "cindercat",
+    "coalpup",
+    "sparkmouse",
+    "magmahog",
+    "torchbird",
+    "ashram",
+    "embergecko",
+    "sunphoenix",
+    "volcanolynx"
+  ],
+  "tide": [
+    "bubbleotter",
+    "reefseal",
+    "mistjelly",
+    "brookfrog",
+    "shellcrab",
+    "wavepenguin",
+    "dewfish",
+    "rainaxolotl",
+    "tidewhale",
+    "abyssray"
+  ],
+  "gale": [
+    "galefox",
+    "skysquirrel",
+    "cloudhare",
+    "feathercat",
+    "gustfinch",
+    "breezedeer",
+    "kiteferret",
+    "whirlhamster",
+    "stormowl",
+    "tempestgryph"
+  ],
+  "terra": [
+    "pebblemole",
+    "stoneboar",
+    "sandfox",
+    "claybear",
+    "orebeetle",
+    "duneturtle",
+    "rockgoat",
+    "mudhippo",
+    "crystalyak",
+    "mountainstag"
+  ]
+};
+
+const PRISM_IDS = ["prismdrake","lumicorn","noctbat","eclipsecat"];
+const PRISM_CHANCE = 0.04;
+
+
+const SAVE_KEY = "phantombeasts_mvp_v1";
+
+const eggNameEl = document.getElementById("eggName");
+const statsEl = document.getElementById("stats");
+const careTendencyEl = document.getElementById("careTendency");
+const logEl = document.getElementById("log");
+const hatchIconEl = document.getElementById("hatchIcon");
+const hatchNameEl = document.getElementById("hatchName");
+const hatchMetaEl = document.getElementById("hatchMeta");
+const hatchDescEl = document.getElementById("hatchDesc");
+const dexGridEl = document.getElementById("dexGrid");
+const dexTabsEl = document.getElementById("dexTabs");
+const abandonBtnEl = document.getElementById("abandonBtn");
+const toDexBtnEl = document.getElementById("toDexBtn");
+const newRunBtnEl = document.getElementById("newRunBtn");
+const dexNewBtnEl = document.getElementById("dexNewBtn");
+
+let state = load() || {
+  stage:"start", egg:null,
+  stats:{hunger:60,mood:60,bond:20,energy:60,growth:0},
+  actions:{feed:0,play:0,rest:0},
+  dex:[], dexCounts:{}, last:null
+};
+
+// 舊版存檔相容：若沒有「元氣」，自動補上初始值。
+if(state.stats && typeof state.stats.energy !== "number"){
+  state.stats.energy = 60;
+  save();
+}
+if(!state.dexCounts || typeof state.dexCounts !== "object"){
+  state.dexCounts = {};
+  (state.dex || []).forEach(id => state.dexCounts[id] = Math.max(1, state.dexCounts[id] || 0));
+  save();
+}
+
+// 防止快速連點造成重複孵化
+let isHatching = false;
+let hatchTimer = null;
+
+function load(){ try{return JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){return null} }
+function save(){ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
+function clamp(v){return Math.max(0,Math.min(100,v));}
+function show(id){
+  const ids=["screen-start","screen-care","screen-hatch","screen-dex","status-panel"];
+  ids.forEach(x=>{
+    const el=document.getElementById(x);
+    if(el){
+      el.classList.add("hidden");
+      el.setAttribute("aria-hidden","true");
+    }
+  });
+
+  const target=document.getElementById(id);
+  if(target){
+    target.classList.remove("hidden");
+    target.removeAttribute("aria-hidden");
+  }
+
+  if(id==="screen-care"){
+    const sp=document.getElementById("status-panel");
+    if(sp){
+      sp.classList.remove("hidden");
+      sp.removeAttribute("aria-hidden");
+    }
+  }
+}
+function renderEggs(){
+  const grid = document.getElementById("eggGrid");
+  if(!grid) return;
+
+  grid.innerHTML = EGGS.map(e=>`
+    <button class="egg" type="button" data-egg-id="${e.id}" aria-label="選擇${e.name}">
+      <div class="egg-art" aria-hidden="true">${e.icon}</div>
+      <h3>${e.name}</h3>
+    </button>`).join("");
+
+  grid.querySelectorAll("[data-egg-id]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      chooseEgg(btn.dataset.eggId);
+    }, {passive:true});
+  });
+}
+function resetStatusMessage(){
+  if(logEl) logEl.textContent = "蛋正在孵化……";
+}
+
+function chooseEgg(id){
+  const egg=EGGS.find(e=>e.id===id);
+
+  if(hatchTimer){
+    clearTimeout(hatchTimer);
+    hatchTimer = null;
+  }
+  isHatching = false;
+
+  document.querySelectorAll(".action").forEach(btn => {
+    btn.disabled = false;
+    btn.style.opacity = "";
+    btn.style.cursor = "";
+  });
+
+  state={...state,stage:"care",egg:id,stats:{hunger:60,mood:60,bond:20,energy:60,growth:0},actions:{feed:0,play:0,rest:0},last:null};
+  save(); render(); resetStatusMessage();
+}
+function statHTML(label,key){
+  const v=state.stats[key];
+  return `<div class="stat-row"><b>${label}</b><div class="bar"><div class="fill" style="width:${v}%"></div></div><span>${v}</span></div>`;
+}
+function tendency(){
+  const a=state.actions, entries=Object.entries(a).sort((x,y)=>y[1]-x[1]);
+  const total=a.feed+a.play+a.rest;
+  if(total<2)return "尚未形成";
+  if(Math.max(...Object.values(a))-Math.min(...Object.values(a))<=1)return "均衡照顧";
+  return entries[0][0]==="feed"?"偏重餵食":entries[0][0]==="play"?"偏重玩耍":"偏重休息";
+}
+function renderCare(){
+  const egg=EGGS.find(e=>e.id===state.egg);
+  eggNameEl.textContent=egg.name;
+  statsEl.innerHTML =
+    statHTML("飽食度","hunger")+
+    statHTML("心情","mood")+
+    statHTML("元氣","energy")+
+    statHTML("親密度","bond")+
+    statHTML("成長值","growth");
+  careTendencyEl.textContent=tendency();
+  if(state.stats.growth >= 90 && state.stats.growth < 100 && !isHatching){
+    logEl.textContent = "蛋殼開始頻繁晃動，裂紋正在擴散……似乎即將孵化！";
+  }
+}
+function act(kind){
+  if(isHatching || state.stage !== "care") return;
+
+  let s=state.stats;
+
+  if(kind==="feed"){
+    // 若按下餵食前飽食度已滿，觸發「過度餵食」懲罰。
+    const overfed = s.hunger >= 100;
+
+    if(overfed){
+      s.mood=clamp(s.mood-10);
+      s.bond=clamp(s.bond-8);
+      s.energy=clamp(s.energy-5);
+      s.growth=clamp(s.growth+7);
+      logEl.textContent="蛋已經吃得太飽了。繼續餵食讓牠心情變差，親密度也下降。";
+    } else {
+      s.hunger=clamp(s.hunger+30);
+      s.mood=clamp(s.mood+5);
+      s.bond=clamp(s.bond+4);
+      s.energy=clamp(s.energy-5);
+      s.growth=clamp(s.growth+7);
+      logEl.textContent="餵食後，蛋的飽食度明顯提高，親密度也稍微增加。";
+    }
+
+  } else if(kind==="play"){
+    // 若按下玩耍前心情已滿，觸發「過度玩耍」懲罰。
+    const overplayed = s.mood >= 100;
+
+    s.hunger=clamp(s.hunger-12);
+    s.energy=clamp(s.energy-20);
+    s.growth=clamp(s.growth+7);
+
+    if(overplayed){
+      s.bond=clamp(s.bond-10);
+      logEl.textContent="蛋已經玩得很盡興了。繼續玩耍反而讓牠感到厭煩，親密度下降。";
+    } else {
+      s.mood=clamp(s.mood+20);
+      s.bond=clamp(s.bond+12);
+      logEl.textContent="玩耍後，蛋的心情與親密度提高，但元氣明顯下降。";
+    }
+
+  } else {
+    // 若按下休息前元氣已滿，這次休息不改變任何數值。
+    const overrested = s.energy >= 100;
+
+    if(overrested){
+      logEl.textContent="蛋的元氣已經完全恢復，不需要再休息了。";
+    } else {
+      // 一般休息：元氣大量增加、飽食度大量減少、心情微幅增加、親密度不增加。
+      s.hunger=clamp(s.hunger-20);
+      s.mood=clamp(s.mood+4);
+      s.energy=clamp(s.energy+30);
+      s.growth=clamp(s.growth+9);
+      logEl.textContent="休息後，蛋恢復了大量元氣，但飽食度明顯下降。";
+    }
+  }
+
+  state.actions[kind]++;
+  save();
+  renderCare();
+
+  if(s.growth>=100){
+    isHatching = true;
+    document.querySelectorAll(".action").forEach(btn => {
+      btn.disabled = true;
+      btn.style.opacity = ".55";
+      btn.style.cursor = "not-allowed";
+    });
+    logEl.textContent = "蛋正在孵化……";
+    hatchTimer = setTimeout(hatch,450);
+  }
+}
+
+function pickWeighted(items){
+  const total=items.reduce((n,x)=>n+x.w,0); let r=Math.random()*total;
+  for(const x of items){ r-=x.w; if(r<=0)return x.b; }
+  return items[0].b;
+}
+function careProfile(s,a){
+  const total = Math.max(1, a.feed + a.play + a.rest);
+  const sorted = Object.entries(a).sort((x,y)=>y[1]-x[1]);
+  const maxAct = sorted[0][0];
+  const maxCount = sorted[0][1];
+  const minCount = Math.min(a.feed,a.play,a.rest);
+  const maxActions = Math.max(a.feed,a.play,a.rest);
+
+  return {
+    total,
+    maxAct,
+    dominantShare: maxCount / total,
+    extreme: maxCount / total >= 0.70,
+    balanced: a.feed>0 && a.play>0 && a.rest>0 && (maxActions-minCount)<=2,
+    highBond: s.bond >= 50,
+    lowBond: s.bond < 50
+  };
+}
+
+function isEligible(b,s,a){
+  const p = careProfile(s,a);
+
+  switch(b.likes){
+    case "feed":
+      return p.highBond && p.maxAct==="feed" && s.hunger>=65;
+    case "play":
+      // 玩耍型：改看玩耍占比，避免「玩耍最多＋高親密」形成矛盾。
+      if(b.id==="cindercat" || b.id==="wavepenguin" || b.id==="galefox"){
+        return (a.play / Math.max(1,p.total)) >= 0.35 && s.mood>=65;
+      }
+      return p.highBond && p.maxAct==="play" && s.mood>=65;
+    case "feed_high":
+      return p.highBond && s.hunger>=85 && p.maxAct==="feed";
+    case "play_high":
+      // 旋風雀：高心情＋至少三次玩耍＋中高親密，不再要求玩耍一定最多。
+      if(b.id==="gustfinch"){
+        return s.mood>=85 && a.play>=3 && s.bond>=55;
+      }
+      return p.highBond && s.mood>=85 && p.maxAct==="play";
+    case "mood_high":
+      return p.highBond && s.mood>=85;
+    case "energy_high":
+      return p.highBond && s.energy>=85;
+    case "bond_high":
+      // 火花鼠：中高親密＋偏低元氣。
+      if(b.id==="sparkmouse"){
+        return s.bond>=60 && s.energy<70;
+      }
+      // 雨鰓螈：中高親密＋偏低元氣。
+      if(b.id==="rainaxolotl"){
+        return s.bond>=60 && s.energy<70;
+      }
+      // 陶甲小熊：中高親密＋偏低元氣。
+      if(b.id==="claybear"){
+        return s.bond>=60 && s.energy<70;
+      }
+      // 炎脈山貓：中高親密＋至少三次玩耍＋偏低元氣。
+      if(b.id==="volcanolynx"){
+        return s.bond>=63 && a.play>=3 && s.energy<70;
+      }
+      return s.bond>=70;
+    case "balanced":
+      // 岳冠鹿：較寬鬆的均衡路線。
+      if(b.id==="mountainstag"){
+        const counts=[a.feed,a.play,a.rest];
+        const maxC=Math.max(...counts), minC=Math.min(...counts);
+        const stagBalanced=counts.every(v=>v>0) && (maxC-minC)<=3;
+        return s.bond>=50 && stagBalanced &&
+               s.hunger>=30 && s.mood>=45 && s.energy>=30;
+      }
+      return p.highBond && p.balanced &&
+             s.hunger>=35 && s.mood>=50 && s.energy>=35;
+    case "rest":
+      return p.lowBond && p.maxAct==="rest" && s.energy>=65;
+    case "energy":
+      return p.lowBond && s.energy>=60;
+    case "rest_high":
+      return p.lowBond && s.energy>=85 && p.maxAct==="rest";
+    case "bond_low":
+      // 低親密型：增加低元氣限制，避免吞掉所有低親密結果。
+      if(b.id==="embergecko" || b.id==="brookfrog" || b.id==="whirlhamster" || b.id==="mudhippo"){
+        return p.lowBond && s.energy<50;
+      }
+      return p.lowBond;
+    default:
+      return false;
+  }
+}
+
+function qualificationWeight(b,s,a){
+  const p = careProfile(s,a);
+  let w = b.rarity==="稀有" ? 8 : 12;
+
+  if(["feed","feed_high"].includes(b.likes) && p.maxAct==="feed") w += 14;
+  if(["play","play_high"].includes(b.likes) && p.maxAct==="play") w += 14;
+  if(["rest","rest_high"].includes(b.likes) && p.maxAct==="rest") w += 14;
+  if(b.likes==="balanced" && p.balanced) w += 16;
+
+  if(p.extreme){
+    if(p.maxAct==="feed" && ["feed","feed_high"].includes(b.likes)) w += 18;
+    if(p.maxAct==="play" && ["play","play_high","mood_high"].includes(b.likes)) w += 18;
+    if(p.maxAct==="rest" && ["rest","rest_high","energy"].includes(b.likes)) w += 18;
+  }
+
+  if(s.hunger>=85 && ["feed","feed_high"].includes(b.likes)) w += 12;
+  if(s.mood>=85 && ["play","play_high","mood_high"].includes(b.likes)) w += 12;
+  if(s.energy>=85 && ["energy","energy_high","rest","rest_high"].includes(b.likes)) w += 12;
+  if(s.bond>=70 && b.likes==="bond_high") w += 14;
+  if(b.id==="sparkmouse" && s.bond>=60 && s.energy<70) w += 10;
+  if(b.id==="rainaxolotl" && s.bond>=60 && s.energy<70) w += 10;
+  if(b.id==="claybear" && s.bond>=60 && s.energy<70) w += 10;
+  if(b.id==="gustfinch" && s.mood>=85 && a.play>=3 && s.bond>=55) w += 10;
+  if(b.id==="mountainstag"){
+    const counts=[a.feed,a.play,a.rest];
+    const maxC=Math.max(...counts), minC=Math.min(...counts);
+    if(counts.every(v=>v>0) && (maxC-minC)<=3) w += 12;
+  }
+  if(b.id==="volcanolynx" && s.bond>=63 && a.play>=3 && s.energy<70) w += 8;
+  if(s.bond<50 && b.likes==="bond_low") w += 12;
+
+  if(b.rarity==="稀有"){
+    if(s.bond>=50) w += 4;
+    if(s.bond>=70) w += 5;
+    if(s.bond>=85) w += 7;
+  }
+
+  return Math.max(1,w);
+}
+
+function fallbackCandidates(pool,s,a){
+  const p = careProfile(s,a);
+
+  if(p.lowBond){
+    const low = pool.filter(b=>["bond_low","rest","energy","rest_high"].includes(b.likes));
+    if(low.length) return low.slice(0,2);
+  }
+
+  const routeMap = {
+    feed:["feed","feed_high"],
+    play:["play","play_high","mood_high"],
+    rest:["rest","rest_high","energy","energy_high"]
+  };
+
+  const routed = pool.filter(b=>routeMap[p.maxAct].includes(b.likes));
+  if(routed.length) return routed.slice(0,2);
+
+  return pool.slice(0,1);
+}
+
+function hatch(){
+  if(state.stage !== "care") return;
+  if(hatchTimer){ clearTimeout(hatchTimer); hatchTimer = null; }
+
+  const egg = EGGS.find(e=>e.id===state.egg);
+  const a = state.actions;
+  const s = state.stats;
+
+  const otherHighCount = [s.hunger,s.mood,s.energy].filter(v=>v>80).length;
+  const prismEligible = s.bond>80 && otherHighCount>=2;
+
+  let beast = null;
+
+  if(prismEligible && Math.random()<PRISM_CHANCE){
+    const prismPool = PRISM_IDS
+      .map(id=>BEASTS.find(b=>b.id===id))
+      .filter(b=>b && b.type===egg.special);
+
+    const prismWeights = prismPool.map(b=>{
+      let w = 10;
+      const p = careProfile(s,a);
+      if(b.likes==="balanced" && p.balanced) w += 12;
+      if(b.likes==="bond_high" && s.bond>=90) w += 12;
+      if(b.likes==="energy_high" && s.energy>=90) w += 12;
+      if(b.likes==="mood_high" && s.mood>=90) w += 12;
+      return {b,w};
+    });
+
+    beast = pickWeighted(prismWeights);
+  }
+
+  if(!beast){
+    const pool = (EGG_POOLS[state.egg]||[])
+      .map(id=>BEASTS.find(b=>b.id===id))
+      .filter(Boolean);
+
+    let candidates = pool.filter(b=>isEligible(b,s,a));
+
+    if(!candidates.length){
+      candidates = fallbackCandidates(pool,s,a);
+    }
+
+    beast = pickWeighted(
+      candidates.map(b=>({b,w:qualificationWeight(b,s,a)}))
+    );
+  }
+
+  state.last=beast.id;
+  state.stage="hatch";
+
+  if(!state.dex.includes(beast.id)) state.dex.push(beast.id);
+  state.dexCounts[beast.id]=(state.dexCounts[beast.id]||0)+1;
+
+  save();
+  render();
+}
+function renderHatch(){
+  const b=BEASTS.find(x=>x.id===state.last);
+  hatchIconEl.textContent=b.icon; hatchNameEl.textContent=b.name;
+  hatchMetaEl.textContent=`${TYPES[b.type].icon} ${TYPES[b.type].name}屬性 · ${b.rarity}`;
+  hatchDescEl.textContent=b.desc;
+}
+const DEX_GROUPS = {
+  fire:{
+    key:"fire", name:"火系圖鑑", icon:"🔥", egg:"赤紋蛋",
+    regular:["flarecub","cindercat","coalpup","sparkmouse","magmahog","torchbird","ashram","embergecko"],
+    rare:["sunphoenix","volcanolynx"],
+    prismRefs:["prismdrake","lumicorn"]
+  },
+  water:{
+    key:"water", name:"水系圖鑑", icon:"💧", egg:"潮汐蛋",
+    regular:["bubbleotter","reefseal","mistjelly","brookfrog","shellcrab","wavepenguin","dewfish","rainaxolotl"],
+    rare:["tidewhale","abyssray"],
+    prismRefs:["noctbat","eclipsecat"]
+  },
+  wind:{
+    key:"wind", name:"風系圖鑑", icon:"🍃", egg:"風羽蛋",
+    regular:["galefox","skysquirrel","cloudhare","feathercat","gustfinch","breezedeer","kiteferret","whirlhamster"],
+    rare:["stormowl","tempestgryph"],
+    prismRefs:["prismdrake","lumicorn"]
+  },
+  forest:{
+    key:"forest", name:"森系圖鑑", icon:"🌿", egg:"岩土蛋",
+    regular:["pebblemole","stoneboar","sandfox","claybear","orebeetle","duneturtle","rockgoat","mudhippo"],
+    rare:["crystalyak","mountainstag"],
+    prismRefs:["noctbat","eclipsecat"]
+  },
+  prism:{
+    key:"prism", name:"幻彩圖鑑", icon:"🌈", egg:"特殊培育可觸發幻彩異變",
+    regular:[],
+    rare:[],
+    prism:["prismdrake","lumicorn","noctbat","eclipsecat"]
+  }
+};
+
+let dexFilter = "all";
+
+function dexCardHtml(b){
+  const got=state.dex.includes(b.id);
+  const isPrism=b.rarity==="幻彩";
+  const prismClass = isPrism ? " prism" : "";
+  const stars = isPrism && got
+    ? `<span class="prism-stars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>`
+    : "";
+  return `<div class="dex-card${prismClass} ${got?"":"locked"}">
+    ${stars}
+    <div class="icon">${got?b.icon:"❔"}</div>
+    <h4>${got?b.name:"？？？"}</h4>
+    <div class="meta">${got?`${TYPES[b.type].icon} ${TYPES[b.type].name} · `:""}<span class="rarity">${got?b.rarity:"未發現"}</span></div>
+    <div class="meta" style="margin-top:4px">${got?`已獲得 ${state.dexCounts[b.id] || 0} 隻`:"尚未獲得"}</div>
+    <p class="meta">${got?b.desc:"完成培育後，有機會解鎖這隻幻獸。"}</p>
+  </div>`;
+}
+
+function dexSectionHtml(group){
+  if(group.key==="prism"){
+    const ids=group.prism;
+    const gotCount=ids.filter(id=>state.dex.includes(id)).length;
+    const lightIds=["prismdrake","lumicorn"];
+    const darkIds=["noctbat","eclipsecat"];
+    const lightGot=lightIds.filter(id=>state.dex.includes(id)).length;
+    const darkGot=darkIds.filter(id=>state.dex.includes(id)).length;
+    const cards=ids.map(id=>BEASTS.find(b=>b.id===id)).filter(Boolean).map(dexCardHtml).join("");
+
+    return `<section class="dex-section" data-dex-section="prism">
+      <div class="dex-section-head">
+        <div>
+          <h3 class="dex-section-title">🌈 幻彩圖鑑</h3>
+          <div class="meta">特殊培育條件下才可能出現的稀有幻獸</div>
+        </div>
+        <div class="dex-progress">收集進度 ${gotCount} / ${ids.length}</div>
+      </div>
+      <div class="dex-subprogress">
+        <span>✨ 光幻彩 ${lightGot} / ${lightIds.length}</span>
+        <span>🌑 暗幻彩 ${darkGot} / ${darkIds.length}</span>
+      </div>
+      <div class="dex-grid">${cards}</div>
+      <div class="dex-divider"></div>
+    </section>`;
+  }
+
+  const ids=[...group.regular,...group.rare];
+  const gotCount=ids.filter(id=>state.dex.includes(id)).length;
+  const regularGot=group.regular.filter(id=>state.dex.includes(id)).length;
+  const rareGot=group.rare.filter(id=>state.dex.includes(id)).length;
+  const prismIds=group.prismRefs || [];
+  const prismGot=prismIds.filter(id=>state.dex.includes(id)).length;
+  const cards=ids.map(id=>BEASTS.find(b=>b.id===id)).filter(Boolean).map(dexCardHtml).join("");
+
+  return `<section class="dex-section" data-dex-section="${group.key}">
+    <div class="dex-section-head">
+      <div>
+        <h3 class="dex-section-title">${group.icon} ${group.name}</h3>
+        <div class="meta">${group.egg}可孵化的主要幻獸</div>
+      </div>
+      <div class="dex-progress">主圖鑑 ${gotCount} / ${ids.length}</div>
+    </div>
+    <div class="dex-subprogress">
+      <span>普通 ${regularGot} / ${group.regular.length}</span>
+      <span>稀有 ${rareGot} / ${group.rare.length}</span>
+      <span>🌈 可額外孵化幻彩 ${prismGot} / ${prismIds.length}</span>
+    </div>
+    <div class="dex-grid">${cards}</div>
+    <div class="dex-divider"></div>
+  </section>`;
+}
+
+function renderDex(){
+  const groups = dexFilter==="all"
+    ? [DEX_GROUPS.fire,DEX_GROUPS.water,DEX_GROUPS.wind,DEX_GROUPS.forest,DEX_GROUPS.prism]
+    : [DEX_GROUPS[dexFilter]].filter(Boolean);
+
+  dexGridEl.innerHTML=groups.map(dexSectionHtml).join("");
+
+  if(dexTabsEl){
+    dexTabsEl.querySelectorAll("[data-dex-filter]").forEach(btn=>{
+      btn.classList.toggle("active",btn.dataset.dexFilter===dexFilter);
+    });
+  }
+}
+function resetRun(){
+  if(hatchTimer){
+    clearTimeout(hatchTimer);
+    hatchTimer = null;
+  }
+  isHatching = false;
+
+  document.querySelectorAll(".action").forEach(btn => {
+    btn.disabled = false;
+    btn.style.opacity = "";
+    btn.style.cursor = "";
+  });
+
+  state.stage="start"; state.egg=null; state.stats={hunger:60,mood:60,bond:20,energy:60,growth:0}; state.actions={feed:0,play:0,rest:0}; state.last=null; save(); render();
+}
+function render(){
+  renderEggs();
+
+  if(state.stage==="care"){
+    show("screen-care");
+    renderCare();
+  } else if(state.stage==="hatch"){
+    show("screen-hatch");
+    renderHatch();
+  } else if(state.stage==="dex"){
+    show("screen-dex");
+    renderDex();
+  } else {
+    state.stage="start";
+    show("screen-start");
+
+    const dex=document.getElementById("screen-dex");
+    if(dex){
+      dex.classList.remove("hidden");
+      dex.removeAttribute("aria-hidden");
+      renderDex();
+    }
+  }
+}
+document.querySelectorAll(".action").forEach(b=>b.addEventListener("click",()=>act(b.dataset.act)));
+if(abandonBtnEl) abandonBtnEl.addEventListener("click",resetRun);
+if(toDexBtnEl) toDexBtnEl.addEventListener("click",()=>{state.stage="dex";save();render();});
+if(newRunBtnEl) newRunBtnEl.addEventListener("click",resetRun);
+if(dexNewBtnEl) dexNewBtnEl.addEventListener("click",resetRun);
+if(dexTabsEl) dexTabsEl.addEventListener("click",(e)=>{
+  const btn=e.target.closest("[data-dex-filter]");
+  if(!btn) return;
+  dexFilter=btn.dataset.dexFilter || "all";
+  renderDex();
+});
+render();
+</script>
+</body>
+</html>
