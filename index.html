@@ -883,8 +883,8 @@ function updatePenaltyRecovery(){
 
 function randomStartStats(){
   const roll0to50=()=>Math.floor(Math.random()*51);
-  const roll1to50=()=>Math.floor(Math.random()*50)+1;
-  return {hunger:roll0to50(),mood:roll0to50(),bond:0,energy:roll1to50(),growth:0};
+  const roll20to50=()=>Math.floor(Math.random()*31)+20;
+  return {hunger:roll0to50(),mood:roll0to50(),bond:0,energy:roll20to50(),growth:0};
 }
 function show(id){
   const ids=["screen-start","screen-care","screen-hatch","screen-dex"];
