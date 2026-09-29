@@ -117,6 +117,149 @@ linear-gradient(#dff1ff 0 65%,#dff4e8 65%);border-radius:22px;border:1px solid v
 .dex-card .icon{font-size:62px}
 .dex-card.locked .icon{filter:brightness(0);opacity:.18}
 .dex-card h4{margin:8px 0 3px}
+.dex-card.owned-selectable{
+  cursor:pointer;
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.dex-card.owned-selectable:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 22px rgba(0,0,0,.09);
+}
+.dex-card.owned-selectable:focus-visible{
+  outline:3px solid rgba(107,124,255,.35);
+  outline-offset:3px;
+}
+.dex-card .select-hint{
+  margin-top:8px;
+  font-size:12px;
+  font-weight:900;
+  color:var(--accent);
+}
+
+.grow-room{
+  min-height:420px;
+  position:relative;
+  overflow:hidden;
+  border-radius:22px;
+  border:1px solid var(--line);
+  background:
+    radial-gradient(circle at 50% 82%,rgba(255,255,255,.95) 0 16%,rgba(236,243,255,.92) 17% 42%,transparent 43%),
+    linear-gradient(180deg,#e4f2ff 0 66%,#e5f3df 66% 100%);
+}
+.grow-room::before,.grow-room::after{
+  content:"";
+  position:absolute;
+  border-radius:50%;
+  background:rgba(255,255,255,.65);
+  filter:blur(1px);
+}
+.grow-room::before{width:150px;height:42px;left:8%;top:14%}
+.grow-room::after{width:190px;height:48px;right:7%;top:23%}
+.grow-room-beast{
+  position:absolute;
+  left:50%;
+  top:52%;
+  transform:translate(-50%,-50%);
+  font-size:84px;
+  line-height:1;
+  filter:drop-shadow(0 8px 8px rgba(0,0,0,.14));
+  transition:left 1.8s ease-in-out, top 1.8s ease-in-out;
+  z-index:2;
+  user-select:none;
+  pointer-events:none;
+  transform-origin:50% 90%;
+}
+.grow-room-beast.squish{
+  animation:growSquish .52s ease;
+}
+@keyframes growSquish{
+  0%{transform:translate(-50%,-50%) scale(1,1)}
+  28%{transform:translate(-50%,-50%) scale(1.16,.76)}
+  55%{transform:translate(-50%,-50%) scale(.88,1.12)}
+  78%{transform:translate(-50%,-50%) scale(1.05,.94)}
+  100%{transform:translate(-50%,-50%) scale(1,1)}
+}
+.grow-room-emote{
+  position:absolute;
+  z-index:3;
+  font-size:34px;
+  line-height:1;
+  pointer-events:none;
+  animation:emotePop 1.35s ease forwards;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.12));
+}
+@keyframes emotePop{
+  0%{opacity:0;transform:translate(-50%,8px) scale(.55)}
+  20%{opacity:1;transform:translate(-50%,0) scale(1.1)}
+  72%{opacity:1;transform:translate(-50%,-14px) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-26px) scale(.9)}
+}
+.grow-room-empty{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(82%,360px);
+  text-align:center;
+  color:var(--muted);
+  font-weight:900;
+  line-height:1.6;
+  z-index:2;
+}
+.grow-room-empty small{font-weight:700}
+.header-grow-btn{white-space:nowrap}
+.grow-room-name{
+  text-align:center;
+  font-weight:900;
+  font-size:22px;
+  margin-top:14px;
+}
+.grow-room-meta{
+  text-align:center;
+  color:var(--muted);
+  margin-top:5px;
+  font-size:13px;
+}
+.grow-room-actions{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:rgba(24,26,38,.48);
+}
+.modal-card{
+  width:min(92vw,430px);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:24px;
+  box-shadow:0 24px 70px rgba(0,0,0,.25);
+  padding:22px;
+  text-align:center;
+}
+.modal-card h3{margin:0 0 10px;font-size:22px}
+.modal-card p{margin:0;color:var(--muted);line-height:1.7}
+.modal-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:20px;
+}
+@media(max-width:600px){
+  .grow-room{min-height:360px}
+  .grow-room-beast{font-size:72px}
+  .modal-actions{grid-template-columns:1fr}
+}
+
 
 /* 幻彩卡片：七彩霓虹感 */
 .dex-card.prism{
@@ -485,6 +628,7 @@ button:disabled{transform:none!important}
     <p>選蛋、照顧、孵化，收集屬於你的幻獸圖鑑。</p>
   </div>
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+    <button class="ghost-btn header-grow-btn" id="headerGrowBtn" type="button">去培育室</button>
     <div class="pill" id="coinDisplay">🪙 金幣 0</div>
     <div class="pill">MVP · 本機存檔</div>
   </div>
@@ -555,6 +699,49 @@ button:disabled{transform:none!important}
   </div>
   <div id="dexGrid"></div>
 </section>
+
+<section id="screen-grow-room" class="panel hidden">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+    <div>
+      <h2 class="title" style="margin:0">培育室</h2>
+      <div class="meta">一次只能培育一隻幻獸。</div>
+    </div>
+    <div class="grow-room-actions">
+      <button class="ghost-btn" id="growReturnBtn" type="button">收回圖鑑</button>
+      <button class="ghost-btn" id="growBackBtn" type="button">返回圖鑑</button>
+    </div>
+  </div>
+
+  <div class="grow-room" id="growRoom">
+    <div class="grow-room-emote hidden" id="growRoomEmote" aria-hidden="true">✨</div>
+    <div class="grow-room-beast" id="growRoomBeast" aria-hidden="true">🐾</div>
+    <div class="grow-room-empty hidden" id="growRoomEmpty">目前沒有培育中的幻獸<br><small>請從圖鑑選擇一隻已獲得的幻獸。</small></div>
+  </div>
+  <div class="grow-room-name" id="growRoomName">尚未選擇幻獸</div>
+  <div class="grow-room-meta" id="growRoomMeta"></div>
+</section>
+
+<div id="growConfirmModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="growConfirmTitle">
+  <div class="modal-card">
+    <h3 id="growConfirmTitle">選擇培育幻獸</h3>
+    <p id="growConfirmText">一次只能培育一隻幻獸。</p>
+    <div class="modal-actions">
+      <button class="ghost-btn" id="growCancelBtn" type="button">取消</button>
+      <button class="main-btn" id="growConfirmBtn" type="button">確定</button>
+    </div>
+  </div>
+</div>
+
+<div id="growReturnModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="growReturnTitle">
+  <div class="modal-card">
+    <h3 id="growReturnTitle">收回圖鑑</h3>
+    <p>是否要收回圖鑑？</p>
+    <div class="modal-actions">
+      <button class="ghost-btn" id="growReturnNoBtn" type="button">否</button>
+      <button class="main-btn" id="growReturnYesBtn" type="button">是</button>
+    </div>
+  </div>
+</div>
 
 <footer>資料只儲存在你的瀏覽器 Local Storage。清除瀏覽器網站資料會一併清除圖鑑。</footer>
 </div>
@@ -694,6 +881,23 @@ const abandonBtnEl = document.getElementById("abandonBtn");
 const toDexBtnEl = document.getElementById("toDexBtn");
 const newRunBtnEl = document.getElementById("newRunBtn");
 const dexNewBtnEl = document.getElementById("dexNewBtn");
+const growRoomEl = document.getElementById("growRoom");
+const growRoomBeastEl = document.getElementById("growRoomBeast");
+const growRoomNameEl = document.getElementById("growRoomName");
+const growRoomMetaEl = document.getElementById("growRoomMeta");
+const growBackBtnEl = document.getElementById("growBackBtn");
+const growConfirmModalEl = document.getElementById("growConfirmModal");
+const growConfirmTextEl = document.getElementById("growConfirmText");
+const growConfirmBtnEl = document.getElementById("growConfirmBtn");
+const growCancelBtnEl = document.getElementById("growCancelBtn");
+const headerGrowBtnEl = document.getElementById("headerGrowBtn");
+const growRoomEmoteEl = document.getElementById("growRoomEmote");
+const growRoomEmptyEl = document.getElementById("growRoomEmpty");
+const growReturnBtnEl = document.getElementById("growReturnBtn");
+const growReturnModalEl = document.getElementById("growReturnModal");
+const growReturnYesBtnEl = document.getElementById("growReturnYesBtn");
+const growReturnNoBtnEl = document.getElementById("growReturnNoBtn");
+
 const bootScreenEl = document.getElementById("bootScreen");
 const bootStartBtnEl = document.getElementById("bootStartBtn");
 const bootResetBtnEl = document.getElementById("bootResetBtn");
@@ -842,6 +1046,7 @@ let state = load() || {
 };
 if(!state.penalty) state.penalty={element:0,mood:0};
 if(typeof state.coins!=="number") state.coins=0;
+if(typeof state.activeBeast!=="string") state.activeBeast=null;
 
 // 舊版存檔相容：若沒有「元氣」，自動補上初始值。
 if(state.stats && typeof state.stats.energy !== "number"){
@@ -887,7 +1092,7 @@ function randomStartStats(){
   return {hunger:roll0to50(),mood:roll0to50(),bond:0,energy:roll20to50(),growth:0};
 }
 function show(id){
-  const ids=["screen-start","screen-care","screen-hatch","screen-dex"];
+  const ids=["screen-start","screen-care","screen-hatch","screen-dex","screen-grow-room"];
   ids.forEach(x=>{
     const el=document.getElementById(x);
     if(el){
@@ -975,6 +1180,12 @@ function updateActionAvailability(){
 }
 function renderCoins(){
   if(coinDisplayEl) coinDisplayEl.textContent = `🪙 金幣 ${state.coins || 0}`;
+}
+
+function renderHeaderGrowButton(){
+  if(!headerGrowBtnEl) return;
+  const b=BEASTS.find(x=>x.id===state.activeBeast);
+  headerGrowBtnEl.textContent = b ? `${b.name}培育室` : "去培育室";
 }
 
 function renderCare(){
@@ -1425,13 +1636,15 @@ function dexCardHtml(b){
   const stars = isPrism && got
     ? `<span class="prism-stars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>`
     : "";
-  return `<div class="dex-card${prismClass} ${got?"":"locked"}">
+  return `<div class="dex-card${prismClass} ${got?"owned-selectable":"locked"}"
+    ${got?`data-grow-beast="${b.id}" role="button" tabindex="0" aria-label="選擇培育 ${b.name}"`:""}>
     ${stars}
     <div class="icon">${got?b.icon:"❔"}</div>
     <h4>${got?b.name:"？？？"}</h4>
     <div class="meta">${got?`${TYPES[b.type].icon} ${TYPES[b.type].name} · `:""}<span class="rarity">${got?b.rarity:"未發現"}</span></div>
     <div class="meta" style="margin-top:4px">${got?`已獲得 ${state.dexCounts[b.id] || 0} 隻`:"尚未獲得"}</div>
     <p class="meta">${got?b.desc:"完成培育後，有機會解鎖這隻幻獸。"}</p>
+    ${got?`<div class="select-hint">點選進入培育</div>`:""}
   </div>`;
 }
 
@@ -1520,6 +1733,127 @@ function renderDex(){
     });
   }
 }
+
+let pendingGrowBeastId = null;
+let growMoveTimer = null;
+let growEmoteTimer = null;
+
+function stopGrowRoomMotion(){
+  if(growMoveTimer){
+    clearInterval(growMoveTimer);
+    growMoveTimer = null;
+  }
+  if(growEmoteTimer){
+    clearTimeout(growEmoteTimer);
+    growEmoteTimer = null;
+  }
+  if(growRoomBeastEl) growRoomBeastEl.classList.remove("squish");
+  if(growRoomEmoteEl) growRoomEmoteEl.classList.add("hidden");
+}
+
+function showGrowRoomEmote(){
+  if(!state.activeBeast || !growRoomEmoteEl || !growRoomBeastEl) return;
+  const icons=["😊","✨","💗","😴","❗","♪","💭"];
+  growRoomEmoteEl.textContent=icons[Math.floor(Math.random()*icons.length)];
+  growRoomEmoteEl.style.left=growRoomBeastEl.style.left || "50%";
+  const y=parseFloat(growRoomBeastEl.style.top || "52");
+  growRoomEmoteEl.style.top=`${Math.max(10,y-16)}%`;
+  growRoomEmoteEl.classList.remove("hidden");
+  // 重新觸發動畫
+  growRoomEmoteEl.style.animation="none";
+  void growRoomEmoteEl.offsetWidth;
+  growRoomEmoteEl.style.animation="";
+  growEmoteTimer=setTimeout(()=>growRoomEmoteEl.classList.add("hidden"),1350);
+}
+
+function moveGrowRoomBeast(){
+  if(!growRoomBeastEl || !growRoomEl || !state.activeBeast) return;
+  const x = 14 + Math.random()*72;
+  const y = 24 + Math.random()*58;
+
+  growRoomBeastEl.classList.remove("squish");
+  void growRoomBeastEl.offsetWidth;
+  growRoomBeastEl.classList.add("squish");
+
+  growRoomBeastEl.style.left = `${x}%`;
+  growRoomBeastEl.style.top = `${y}%`;
+
+  if(Math.random()<0.38){
+    setTimeout(showGrowRoomEmote,420);
+  }
+}
+
+function startGrowRoomMotion(){
+  stopGrowRoomMotion();
+  if(!state.activeBeast) return;
+  moveGrowRoomBeast();
+  growMoveTimer = setInterval(moveGrowRoomBeast, 2200);
+}
+
+function renderGrowRoom(){
+  const b=BEASTS.find(x=>x.id===state.activeBeast);
+
+  if(!b){
+    stopGrowRoomMotion();
+    growRoomBeastEl.classList.add("hidden");
+    growRoomEmptyEl.classList.remove("hidden");
+    growRoomNameEl.textContent="培育室目前是空的";
+    growRoomMetaEl.textContent="從圖鑑點選已獲得的幻獸即可開始培育。";
+    if(growReturnBtnEl) growReturnBtnEl.disabled=true;
+    return;
+  }
+
+  growRoomBeastEl.classList.remove("hidden");
+  growRoomEmptyEl.classList.add("hidden");
+  if(growReturnBtnEl) growReturnBtnEl.disabled=false;
+
+  growRoomBeastEl.textContent=b.icon;
+  growRoomNameEl.textContent=b.name;
+  growRoomMetaEl.textContent=`${TYPES[b.type].icon} ${TYPES[b.type].name}屬性 · ${b.rarity}`;
+  startGrowRoomMotion();
+}
+
+function openGrowConfirm(beastId){
+  const b=BEASTS.find(x=>x.id===beastId);
+  if(!b || !state.dex.includes(beastId)) return;
+  pendingGrowBeastId=beastId;
+  growConfirmTextEl.textContent=`一次只能培育一隻幻獸，確定要培育「${b.name}」嗎？`;
+  growConfirmModalEl.classList.remove("hidden");
+  growConfirmBtnEl.focus();
+}
+
+function closeGrowConfirm(){
+  pendingGrowBeastId=null;
+  growConfirmModalEl.classList.add("hidden");
+}
+
+function confirmGrowBeast(){
+  if(!pendingGrowBeastId) return;
+  state.activeBeast=pendingGrowBeastId;
+  state.stage="grow-room";
+  closeGrowConfirm();
+  save();
+  render();
+}
+
+function openGrowReturnConfirm(){
+  if(!state.activeBeast) return;
+  growReturnModalEl.classList.remove("hidden");
+  growReturnYesBtnEl.focus();
+}
+
+function closeGrowReturnConfirm(){
+  growReturnModalEl.classList.add("hidden");
+}
+
+function confirmGrowReturn(){
+  stopGrowRoomMotion();
+  state.activeBeast=null;
+  closeGrowReturnConfirm();
+  save();
+  render();
+}
+
 function resetRun(){
   if(hatchTimer){
     clearTimeout(hatchTimer);
@@ -1537,21 +1871,30 @@ function resetRun(){
 }
 function render(){
   renderCoins();
+  renderHeaderGrowButton();
   renderEggs();
 
   if(state.stage==="care"){
+    stopGrowRoomMotion();
     if(dexNewBtnEl) dexNewBtnEl.style.display="";
     show("screen-care");
     renderCare();
   } else if(state.stage==="hatch"){
+    stopGrowRoomMotion();
     if(dexNewBtnEl) dexNewBtnEl.style.display="";
     show("screen-hatch");
     renderHatch();
   } else if(state.stage==="dex"){
+    stopGrowRoomMotion();
     if(dexNewBtnEl) dexNewBtnEl.style.display="";
     show("screen-dex");
     renderDex();
+  } else if(state.stage==="grow-room"){
+    if(dexNewBtnEl) dexNewBtnEl.style.display="";
+    show("screen-grow-room");
+    renderGrowRoom();
   } else {
+    stopGrowRoomMotion();
     state.stage="start";
     show("screen-start");
 
@@ -1574,6 +1917,43 @@ if(dexTabsEl) dexTabsEl.addEventListener("click",(e)=>{
   if(!btn) return;
   dexFilter=btn.dataset.dexFilter || "all";
   renderDex();
+});
+
+if(dexGridEl){
+  dexGridEl.addEventListener("click",(e)=>{
+    const card=e.target.closest("[data-grow-beast]");
+    if(card) openGrowConfirm(card.dataset.growBeast);
+  });
+  dexGridEl.addEventListener("keydown",(e)=>{
+    if(e.key!=="Enter" && e.key!==" ") return;
+    const card=e.target.closest("[data-grow-beast]");
+    if(!card) return;
+    e.preventDefault();
+    openGrowConfirm(card.dataset.growBeast);
+  });
+}
+if(growCancelBtnEl) growCancelBtnEl.addEventListener("click",closeGrowConfirm);
+if(growConfirmBtnEl) growConfirmBtnEl.addEventListener("click",confirmGrowBeast);
+if(growConfirmModalEl) growConfirmModalEl.addEventListener("click",(e)=>{
+  if(e.target===growConfirmModalEl) closeGrowConfirm();
+});
+if(growBackBtnEl) growBackBtnEl.addEventListener("click",()=>{
+  stopGrowRoomMotion();
+  state.stage="dex";
+  save();
+  render();
+});
+
+if(headerGrowBtnEl) headerGrowBtnEl.addEventListener("click",()=>{
+  state.stage="grow-room";
+  save();
+  render();
+});
+if(growReturnBtnEl) growReturnBtnEl.addEventListener("click",openGrowReturnConfirm);
+if(growReturnNoBtnEl) growReturnNoBtnEl.addEventListener("click",closeGrowReturnConfirm);
+if(growReturnYesBtnEl) growReturnYesBtnEl.addEventListener("click",confirmGrowReturn);
+if(growReturnModalEl) growReturnModalEl.addEventListener("click",(e)=>{
+  if(e.target===growReturnModalEl) closeGrowReturnConfirm();
 });
 
 if(bootStartBtnEl) bootStartBtnEl.addEventListener("click",resumeGameFromSave);
