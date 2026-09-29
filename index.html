@@ -52,10 +52,54 @@ radial-gradient(circle at 50% 85%,#ffffff 0 20%,#ebf0ff 21% 50%,transparent 51%)
 linear-gradient(#dff1ff 0 65%,#dff4e8 65%);border-radius:22px;border:1px solid var(--line);position:relative;overflow:hidden}
 .scene:before,.scene:after{content:"";position:absolute;border-radius:50%;background:#fff8;filter:blur(1px)}
 .scene:before{width:120px;height:34px;left:8%;top:14%}.scene:after{width:160px;height:40px;right:8%;top:24%}
-.creature{z-index:2;text-align:center}
+.creature{
+  z-index:2;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+  width:min(100%,420px);
+}
+.status-bubble{
+  position:relative;
+  width:min(92%,360px);
+  padding:14px 16px;
+  border-radius:18px;
+  background:rgba(255,255,255,.92);
+  border:1px solid #e7e0d6;
+  box-shadow:0 10px 24px rgba(0,0,0,.08);
+  color:#595b66;
+}
+.status-bubble::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:-10px;
+  width:18px;
+  height:18px;
+  background:rgba(255,255,255,.92);
+  border-right:1px solid #e7e0d6;
+  border-bottom:1px solid #e7e0d6;
+  rotate:45deg;
+}
+.status-bubble .log{
+  margin:0;
+  min-height:50px;
+  padding:0;
+  background:transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:15px;
+  line-height:1.5;
+  font-weight:800;
+}
 .creature .big{font-size:116px;display:block;animation:bob 2.2s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-7px)}}
-.creature-name{font-size:24px;font-weight:900;margin-top:8px}
+.creature-name{font-size:24px;font-weight:900;margin-top:2px}
 .type-tag{display:inline-block;margin-top:6px;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:13px;font-weight:800}
 .stats{display:grid;gap:12px}
 .stat-row{display:grid;grid-template-columns:72px 1fr 44px;align-items:center;gap:10px}
@@ -201,24 +245,7 @@ footer{padding:16px 0 6px;text-align:center;color:var(--muted);font-size:12px}
  .dex-section-head{align-items:flex-start;flex-direction:column}
 }
 
-.status-top{
-  margin-bottom:18px;
-  min-height:120px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-}
-.status-top .log{
-  width:100%;
-  margin:0;
-  min-height:72px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:16px;
-  font-weight:800;
-}
+
 .actions{
   grid-template-columns:repeat(3,minmax(150px,1.5fr)) !important;
   justify-content:center;
@@ -311,6 +338,26 @@ footer{padding:16px 0 6px;text-align:center;color:var(--muted);font-size:12px}
   #eggGrid .egg h3{
     margin:8px 0 0;
     font-size:20px;
+  }
+
+  .scene{
+    min-height:320px;
+    padding:16px 12px;
+  }
+
+  .creature{
+    width:100%;
+    gap:10px;
+  }
+
+  .status-bubble{
+    width:min(100%,340px);
+    padding:12px 14px;
+  }
+
+  .status-bubble .log{
+    min-height:44px;
+    font-size:14px;
   }
 
   header{
@@ -449,15 +496,14 @@ button:disabled{transform:none!important}
   
 </section>
 
-<section id="status-panel" class="panel status-top hidden">
-  <div class="log" id="log">蛋正在孵化……</div>
-</section>
-
 <section id="screen-care" class="grid hidden">
   <div class="panel">
     <h2 class="title">培育室</h2>
     <div class="scene">
       <div class="creature">
+        <div class="status-bubble" id="statusBubble" aria-live="polite">
+          <div class="log" id="log">蛋正在孵化……</div>
+        </div>
         <span class="big" id="careIcon">🥚</span>
         <div class="creature-name" id="eggName">幻獸蛋</div>
       </div>
@@ -841,7 +887,7 @@ function randomStartStats(){
   return {hunger:roll0to50(),mood:roll0to50(),bond:0,energy:roll1to50(),growth:0};
 }
 function show(id){
-  const ids=["screen-start","screen-care","screen-hatch","screen-dex","status-panel"];
+  const ids=["screen-start","screen-care","screen-hatch","screen-dex"];
   ids.forEach(x=>{
     const el=document.getElementById(x);
     if(el){
@@ -854,14 +900,6 @@ function show(id){
   if(target){
     target.classList.remove("hidden");
     target.removeAttribute("aria-hidden");
-  }
-
-  if(id==="screen-care"){
-    const sp=document.getElementById("status-panel");
-    if(sp){
-      sp.classList.remove("hidden");
-      sp.removeAttribute("aria-hidden");
-    }
   }
 }
 function eggShellHTML(egg){
