@@ -27,6 +27,25 @@ header{display:flex;justify-content:space-between;align-items:center;gap:14px;ma
 .egg{border:1px solid var(--line);background:#fff;border-radius:20px;padding:16px;text-align:center;cursor:pointer;transition:.2s;min-height:190px}
 .egg:hover{transform:translateY(-3px);box-shadow:0 10px 24px #00000012}
 .egg-art{font-size:78px;line-height:1.1;filter:drop-shadow(0 7px 8px #0002)}
+.egg-shell{
+  --egg-spot:#888;
+  display:inline-block;
+  width:72px;
+  height:92px;
+  border-radius:50% 50% 46% 46% / 58% 58% 42% 42%;
+  background:
+    radial-gradient(circle at 29% 30%, var(--egg-spot) 0 5px, transparent 5.8px),
+    radial-gradient(circle at 66% 25%, var(--egg-spot) 0 4px, transparent 4.8px),
+    radial-gradient(circle at 53% 49%, var(--egg-spot) 0 6px, transparent 6.8px),
+    radial-gradient(circle at 27% 61%, var(--egg-spot) 0 3.7px, transparent 4.5px),
+    radial-gradient(circle at 69% 69%, var(--egg-spot) 0 5px, transparent 5.8px),
+    linear-gradient(145deg,#fffdf7 0%,#ebe7dd 66%,#d8d2c7 100%);
+  border:2px solid rgba(84,76,65,.15);
+  box-shadow:inset -8px -10px 14px rgba(70,60,45,.08), inset 8px 7px 12px rgba(255,255,255,.68), 0 8px 12px rgba(0,0,0,.12);
+  vertical-align:middle;
+}
+#careIcon .egg-shell{width:92px;height:118px;}
+.action:disabled{opacity:.38!important;filter:grayscale(.55);cursor:not-allowed!important;box-shadow:none!important;}
 .egg h3{margin:8px 0 4px}.egg small{color:var(--muted)}
 .scene{min-height:340px;display:grid;place-items:center;background:
 radial-gradient(circle at 50% 85%,#ffffff 0 20%,#ebf0ff 21% 50%,transparent 51%),
@@ -315,16 +334,113 @@ footer{padding:16px 0 6px;text-align:center;color:var(--muted);font-size:12px}
   }
 }
 
+/* 每次進入遊戲都會顯示的開頭畫面 */
+.boot-screen{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:grid;
+  place-items:center;
+  padding:22px;
+  background:
+    radial-gradient(circle at 50% 38%,rgba(142,120,255,.32),transparent 28%),
+    radial-gradient(circle at 20% 20%,rgba(103,232,255,.18),transparent 22%),
+    radial-gradient(circle at 82% 78%,rgba(255,95,162,.18),transparent 24%),
+    linear-gradient(160deg,#17182b 0%,#232542 48%,#131422 100%);
+}
+.boot-screen.hidden{display:none!important}
+.boot-card{
+  width:min(92vw,520px);
+  padding:36px 28px 28px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:30px;
+  background:rgba(255,255,255,.09);
+  box-shadow:0 24px 80px rgba(0,0,0,.34);
+  backdrop-filter:blur(18px);
+  text-align:center;
+  color:#fff;
+}
+.boot-orb{
+  font-size:92px;
+  filter:drop-shadow(0 0 18px rgba(137,121,255,.48));
+  animation:bootFloat 2.6s ease-in-out infinite;
+}
+.boot-kicker{font-size:11px;letter-spacing:.24em;opacity:.7;font-weight:900;margin-top:8px}
+.boot-card h1{font-size:clamp(42px,10vw,68px);margin:8px 0 6px;letter-spacing:.08em}
+.boot-card p{margin:0 auto 24px;max-width:360px;line-height:1.7;color:rgba(255,255,255,.78)}
+.boot-actions{display:grid;gap:12px;position:relative;z-index:5}
+.boot-btn{
+  width:100%;
+  font-size:17px;
+  padding:16px 18px;
+  position:relative;
+  z-index:6;
+  pointer-events:auto;
+  -webkit-user-select:none;
+  user-select:none;
+}
+.boot-music{
+  margin-top:16px;
+  border:0;
+  background:transparent;
+  color:rgba(255,255,255,.76);
+  font-weight:800;
+  cursor:pointer;
+  padding:8px 12px;
+}
+.boot-note{font-size:11px;color:rgba(255,255,255,.48);margin-top:4px}
+@keyframes bootFloat{50%{transform:translateY(-7px) rotate(2deg)}}
+
+/* 全域按鈕按壓回饋 */
+button{
+  transition:transform .11s ease, box-shadow .11s ease, filter .11s ease, opacity .11s ease;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+button.press-feedback{
+  transform:scale(1.045)!important;
+  filter:brightness(1.04);
+}
+button:disabled{transform:none!important}
+
+/* 「全部」頁為單一平面圖鑑，不再按屬性分區 */
+.dex-all-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  margin:18px 0 12px;
+}
+
 </style>
 </head>
 <body>
-<div class="wrap">
+<div id="bootScreen" class="boot-screen" aria-label="遊戲開頭畫面">
+  <div class="boot-card">
+    <div class="boot-orb">🥚</div>
+    <div class="boot-kicker">PHANTOM BEASTS</div>
+    <h1>幻獸們</h1>
+    <p>培育元素、建立羈絆，孵化屬於你的幻獸。</p>
+    <div class="boot-actions">
+      <button type="button" class="main-btn boot-btn" id="bootStartBtn">開始遊戲</button>
+      <button type="button" class="ghost-btn boot-btn" id="bootResetBtn">重新開始</button>
+    </div>
+    <button class="boot-music" id="musicToggleBtn" type="button">♫ 音樂：開</button>
+    <div class="boot-note">音樂會在你第一次按下按鈕後播放。</div>
+  </div>
+</div>
+
+<div class="wrap" id="gameRoot">
 <header>
   <div class="brand">
     <h1>幻獸們</h1>
     <p>選蛋、照顧、孵化，收集屬於你的幻獸圖鑑。</p>
   </div>
-  <div class="pill">MVP · 本機存檔</div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+    <div class="pill" id="coinDisplay">🪙 金幣 0</div>
+    <div class="pill">MVP · 本機存檔</div>
+  </div>
 </header>
 
 <section id="screen-start" class="panel">
@@ -347,8 +463,8 @@ footer{padding:16px 0 6px;text-align:center;color:var(--muted);font-size:12px}
       </div>
     </div>
     <div class="actions">
-      <button class="action" type="button" data-act="feed">🍎 餵食</button>
-      <button class="action" type="button" data-act="play">🪁 玩耍</button>
+      <button class="action" type="button" data-act="feed">🌀 元素導入</button>
+      <button class="action" type="button" data-act="play">🤲 愛撫</button>
       <button class="action" type="button" data-act="rest">🌙 休息</button>
     </div>
     
@@ -388,7 +504,7 @@ footer{padding:16px 0 6px;text-align:center;color:var(--muted);font-size:12px}
     <button class="dex-tab" data-dex-filter="fire">🔥 火</button>
     <button class="dex-tab" data-dex-filter="water">💧 水</button>
     <button class="dex-tab" data-dex-filter="wind">🍃 風</button>
-    <button class="dex-tab" data-dex-filter="forest">🌿 森</button>
+    <button class="dex-tab" data-dex-filter="forest">🪨 土</button>
     <button class="dex-tab" data-dex-filter="prism">🌈 幻彩</button>
   </div>
   <div id="dexGrid"></div>
@@ -398,16 +514,17 @@ footer{padding:16px 0 6px;text-align:center;color:var(--muted);font-size:12px}
 </div>
 
 <script>
+const coinDisplayEl = document.getElementById("coinDisplay");
 const TYPES = {
   fire:{name:"火",icon:"🔥"}, water:{name:"水",icon:"💧"}, wind:{name:"風",icon:"🍃"},
   earth:{name:"土",icon:"⛰️"}, light:{name:"光",icon:"✨"}, dark:{name:"暗",icon:"🌑"}
 };
 
 const EGGS = [
-  {id:"ember", name:"赤紋蛋", icon:"🥚", main:"fire", special:"light", note:"火系蛋 · 含有光之可能"},
-  {id:"tide", name:"潮汐蛋", icon:"🥚", main:"water", special:"dark", note:"水系蛋 · 含有暗之可能"},
-  {id:"gale", name:"風羽蛋", icon:"🥚", main:"wind", special:"light", note:"風系蛋 · 含有光之可能"},
-  {id:"terra", name:"岩土蛋", icon:"🥚", main:"earth", special:"dark", note:"土系蛋 · 含有暗之可能"}
+  {id:"ember", name:"赤紋蛋", icon:"🥚", spot:"#d94a43", main:"fire", special:"light", note:"火系蛋 · 含有光之可能"},
+  {id:"tide", name:"潮汐蛋", icon:"🥚", spot:"#3f7fd9", main:"water", special:"dark", note:"水系蛋 · 含有暗之可能"},
+  {id:"gale", name:"風羽蛋", icon:"🥚", spot:"#48a868", main:"wind", special:"light", note:"風系蛋 · 含有光之可能"},
+  {id:"terra", name:"岩土蛋", icon:"🥚", spot:"#8b5e3c", main:"earth", special:"dark", note:"土系蛋 · 含有暗之可能"}
 ];
 
 const BEASTS = [
@@ -517,6 +634,7 @@ const PRISM_CHANCE = 0.04;
 const SAVE_KEY = "phantombeasts_mvp_v1";
 
 const eggNameEl = document.getElementById("eggName");
+const careIconEl = document.getElementById("careIcon");
 const statsEl = document.getElementById("stats");
 const careTendencyEl = document.getElementById("careTendency");
 const logEl = document.getElementById("log");
@@ -530,17 +648,158 @@ const abandonBtnEl = document.getElementById("abandonBtn");
 const toDexBtnEl = document.getElementById("toDexBtn");
 const newRunBtnEl = document.getElementById("newRunBtn");
 const dexNewBtnEl = document.getElementById("dexNewBtn");
+const bootScreenEl = document.getElementById("bootScreen");
+const bootStartBtnEl = document.getElementById("bootStartBtn");
+const bootResetBtnEl = document.getElementById("bootResetBtn");
+const musicToggleBtnEl = document.getElementById("musicToggleBtn");
+
+
+let audioCtx=null;
+let musicEnabled=true;
+let musicTimer=null;
+let musicStep=0;
+let audioUnlocked=false;
+
+async function ensureAudio(){
+  if(!audioCtx){
+    const AC=window.AudioContext || window.webkitAudioContext;
+    if(!AC) return null;
+    audioCtx=new AC();
+  }
+  try{
+    if(audioCtx.state==="suspended"){
+      await audioCtx.resume();
+    }
+    audioUnlocked = audioCtx.state==="running";
+  }catch(e){}
+  return audioCtx;
+}
+
+async function unlockAudio(){
+  const ctx=await ensureAudio();
+  if(!ctx) return false;
+
+  // iOS Safari：用極短的靜音音符在使用者手勢中真正解鎖 AudioContext。
+  try{
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    gain.gain.setValueAtTime(0.00001,ctx.currentTime);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+0.02);
+    audioUnlocked=true;
+  }catch(e){}
+  return audioUnlocked;
+}
+
+async function playClickSound(){
+  const ctx=await ensureAudio();
+  if(!ctx || ctx.state!=="running") return;
+  const osc=ctx.createOscillator();
+  const gain=ctx.createGain();
+  osc.type="sine";
+  osc.frequency.setValueAtTime(520,ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(720,ctx.currentTime+.055);
+  gain.gain.setValueAtTime(.0001,ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(.045,ctx.currentTime+.008);
+  gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.08);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime+.085);
+}
+
+async function playMusicNote(freq,duration=.7,volume=.018){
+  if(!musicEnabled) return;
+  const ctx=await ensureAudio();
+  if(!ctx || ctx.state!=="running") return;
+  const osc=ctx.createOscillator();
+  const gain=ctx.createGain();
+  osc.type="triangle";
+  osc.frequency.setValueAtTime(freq,ctx.currentTime);
+  gain.gain.setValueAtTime(.0001,ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(volume,ctx.currentTime+.08);
+  gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+duration);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime+duration+.03);
+}
+
+async function startMusic(){
+  if(!musicEnabled || musicTimer) return;
+  await unlockAudio();
+  if(!audioCtx || audioCtx.state!=="running") return;
+
+  const melody=[261.63,329.63,392.00,329.63,293.66,349.23,440.00,349.23];
+  const tick=()=>{
+    if(!musicEnabled){
+      musicTimer=null;
+      return;
+    }
+    playMusicNote(melody[musicStep%melody.length],.8,.016);
+    if(musicStep%2===0){
+      playMusicNote(melody[(musicStep+4)%melody.length]/2,.95,.010);
+    }
+    musicStep++;
+    musicTimer=setTimeout(tick,900);
+  };
+  tick();
+}
+
+function stopMusic(){
+  if(musicTimer){
+    clearTimeout(musicTimer);
+    musicTimer=null;
+  }
+}
+
+function updateMusicLabel(){
+  if(musicToggleBtnEl){
+    musicToggleBtnEl.textContent=musicEnabled?"♫ 音樂：開":"♫ 音樂：關";
+  }
+}
+
+function hideBoot(){
+  if(bootScreenEl) bootScreenEl.classList.add("hidden");
+}
+
+async function resumeGameFromSave(){
+  await unlockAudio();
+  playClickSound();
+  hideBoot();
+  render();
+  if(musicEnabled) startMusic();
+}
+
+async function clearAllProgress(){
+  await unlockAudio();
+  if(!confirm("重新開始會清除目前圖鑑與所有培育進度，確定要重新開始嗎？")) return;
+  localStorage.removeItem(SAVE_KEY);
+  state={
+    coins:0,stage:"start",egg:null,
+    stats:randomStartStats(),
+    actions:{feed:0,play:0,rest:0},
+    dex:[],dexCounts:{},last:null
+  };
+  dexFilter="all";
+  save();
+  playClickSound();
+  hideBoot();
+  render();
+  if(musicEnabled) startMusic();
+}
 
 let state = load() || {
   stage:"start", egg:null,
-  stats:{hunger:60,mood:60,bond:20,energy:60,growth:0},
+  stats:{hunger:0,mood:0,bond:0,energy:0,growth:0},
   actions:{feed:0,play:0,rest:0},
   dex:[], dexCounts:{}, last:null
 };
+if(!state.penalty) state.penalty={element:0,mood:0};
+if(typeof state.coins!=="number") state.coins=0;
 
 // 舊版存檔相容：若沒有「元氣」，自動補上初始值。
 if(state.stats && typeof state.stats.energy !== "number"){
-  state.stats.energy = 60;
+  state.stats.energy = 0;
   save();
 }
 if(!state.dexCounts || typeof state.dexCounts !== "object"){
@@ -553,9 +812,34 @@ if(!state.dexCounts || typeof state.dexCounts !== "object"){
 let isHatching = false;
 let hatchTimer = null;
 
-function load(){ try{return JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){return null} }
-function save(){ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
+function load(){
+  try{return JSON.parse(localStorage.getItem(SAVE_KEY))}
+  catch(e){return null}
+}
+function save(){
+  try{localStorage.setItem(SAVE_KEY, JSON.stringify(state))}
+  catch(e){}
+}
 function clamp(v){return Math.max(0,Math.min(100,v));}
+
+function penalizedGrowth(base, stage){
+  if(stage<=0) return base;
+  // 每次懲罰減半，無條件捨去：7→3→1→0、4→2→1→0、10→5→2→1→0
+  return Math.max(0, Math.floor(base / Math.pow(2, stage)));
+}
+
+function updatePenaltyRecovery(){
+  if(!state.penalty) state.penalty={element:0,mood:0};
+  // 對應狀態恢復到 >0 時，連續懲罰重置。
+  if(state.stats.hunger>0) state.penalty.element=0;
+  if(state.stats.mood>0) state.penalty.mood=0;
+}
+
+function randomStartStats(){
+  const roll0to50=()=>Math.floor(Math.random()*51);
+  const roll1to50=()=>Math.floor(Math.random()*50)+1;
+  return {hunger:roll0to50(),mood:roll0to50(),bond:0,energy:roll1to50(),growth:0};
+}
 function show(id){
   const ids=["screen-start","screen-care","screen-hatch","screen-dex","status-panel"];
   ids.forEach(x=>{
@@ -580,20 +864,23 @@ function show(id){
     }
   }
 }
+function eggShellHTML(egg){
+  return `<span class="egg-shell" style="--egg-spot:${egg.spot || '#888'}"></span>`;
+}
 function renderEggs(){
   const grid = document.getElementById("eggGrid");
   if(!grid) return;
 
   grid.innerHTML = EGGS.map(e=>`
     <button class="egg" type="button" data-egg-id="${e.id}" aria-label="選擇${e.name}">
-      <div class="egg-art" aria-hidden="true">${e.icon}</div>
+      <div class="egg-art" aria-hidden="true">${eggShellHTML(e)}</div>
       <h3>${e.name}</h3>
     </button>`).join("");
 
   grid.querySelectorAll("[data-egg-id]").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       chooseEgg(btn.dataset.eggId);
-    }, {passive:true});
+    });
   });
 }
 function resetStatusMessage(){
@@ -615,7 +902,7 @@ function chooseEgg(id){
     btn.style.cursor = "";
   });
 
-  state={...state,stage:"care",egg:id,stats:{hunger:60,mood:60,bond:20,energy:60,growth:0},actions:{feed:0,play:0,rest:0},last:null};
+  state={...state,stage:"care",egg:id,stats:randomStartStats(),actions:{feed:0,play:0,rest:0},penalty:{element:0,mood:0},last:null};
   save(); render(); resetStatusMessage();
 }
 function statHTML(label,key){
@@ -627,18 +914,44 @@ function tendency(){
   const total=a.feed+a.play+a.rest;
   if(total<2)return "尚未形成";
   if(Math.max(...Object.values(a))-Math.min(...Object.values(a))<=1)return "均衡照顧";
-  return entries[0][0]==="feed"?"偏重餵食":entries[0][0]==="play"?"偏重玩耍":"偏重休息";
+  return entries[0][0]==="feed"?"偏重元素導入":entries[0][0]==="play"?"偏重愛撫":"偏重休息";
 }
+function updateActionAvailability(){
+  const caring = state.stage==="care";
+  const noEnergy = caring && state.stats.energy<=0;
+  const fullEnergy = caring && state.stats.energy>=100;
+
+  document.querySelectorAll(".action").forEach(btn=>{
+    let shouldDisable = isHatching;
+
+    // 元氣為 0：只能休息。
+    if(noEnergy && btn.dataset.act!=="rest") shouldDisable = true;
+
+    // 元氣為 100：休息不能再使用。
+    if(fullEnergy && btn.dataset.act==="rest") shouldDisable = true;
+
+    btn.disabled = shouldDisable;
+    btn.style.opacity = shouldDisable ? ".38" : "";
+    btn.style.cursor = shouldDisable ? "not-allowed" : "";
+  });
+}
+function renderCoins(){
+  if(coinDisplayEl) coinDisplayEl.textContent = `🪙 金幣 ${state.coins || 0}`;
+}
+
 function renderCare(){
+  renderCoins();
   const egg=EGGS.find(e=>e.id===state.egg);
   eggNameEl.textContent=egg.name;
+  if(careIconEl) careIconEl.innerHTML=eggShellHTML(egg);
   statsEl.innerHTML =
-    statHTML("飽食度","hunger")+
+    statHTML("元素力","hunger")+
     statHTML("心情","mood")+
     statHTML("元氣","energy")+
     statHTML("親密度","bond")+
     statHTML("成長值","growth");
   careTendencyEl.textContent=tendency();
+  updateActionAvailability();
   if(state.stats.growth >= 90 && state.stats.growth < 100 && !isHatching){
     logEl.textContent = "蛋殼開始頻繁晃動，裂紋正在擴散……似乎即將孵化！";
   }
@@ -647,58 +960,139 @@ function act(kind){
   if(isHatching || state.stage !== "care") return;
 
   let s=state.stats;
+  if(!state.penalty) state.penalty={element:0,mood:0};
+
+  // 以按下按鈕前的狀態判定低狀態懲罰。
+  const beforeElement = s.hunger;
+  const beforeMood = s.mood;
+
+  // 元氣為 0 時，只能休息。
+  if(s.energy<=0 && kind!=="rest"){
+    logEl.textContent="元氣耗盡了，現在只能先讓幻獸蛋休息。";
+    updateActionAvailability();
+    return;
+  }
+
+  // 元氣為 100 時，休息停用。
+  if(kind==="rest" && s.energy>=100){
+    logEl.textContent="蛋的元氣已經完全恢復，必須先消耗元氣才能再次休息。";
+    updateActionAvailability();
+    return;
+  }
+
+  let growthGain=0;
+  let penaltyStage=0;
 
   if(kind==="feed"){
-    // 若按下餵食前飽食度已滿，觸發「過度餵食」懲罰。
     const overfed = s.hunger >= 100;
 
     if(overfed){
       s.mood=clamp(s.mood-10);
       s.bond=clamp(s.bond-8);
       s.energy=clamp(s.energy-5);
-      s.growth=clamp(s.growth+7);
-      logEl.textContent="蛋已經吃得太飽了。繼續餵食讓牠心情變差，親密度也下降。";
-    } else {
-      s.hunger=clamp(s.hunger+30);
-      s.mood=clamp(s.mood+5);
-      s.bond=clamp(s.bond+4);
-      s.energy=clamp(s.energy-5);
-      s.growth=clamp(s.growth+7);
-      logEl.textContent="餵食後，蛋的飽食度明顯提高，親密度也稍微增加。";
+
+      if(beforeMood===0){
+        state.penalty.mood += 1;
+        penaltyStage = state.penalty.mood;
+        growthGain = penalizedGrowth(7, penaltyStage);
+      }else{
+        growthGain = 7;
+      }
+
+      s.growth=clamp(s.growth+growthGain);
+      logEl.textContent = beforeMood===0
+        ? `心情已降到最低。這次元素導入的成長效率下降，成長值 +${growthGain}。`
+        : "蛋內的元素力已經飽和。繼續導入元素使能量失衡，心情與親密度都下降。";
+    }else{
+      s.hunger=clamp(s.hunger+10);
+      s.mood=clamp(s.mood-10);
+      s.energy=clamp(s.energy-10);
+
+      if(beforeMood===0){
+        state.penalty.mood += 1;
+        penaltyStage = state.penalty.mood;
+        growthGain = penalizedGrowth(7, penaltyStage);
+        // 心情 0：親密度仍不增加。
+        logEl.textContent=`心情已降到最低。元素導入無法增加親密度，成長效率下降為 +${growthGain}。`;
+      }else{
+        s.bond=clamp(s.bond+3);
+        growthGain = 7;
+        logEl.textContent="元素導入提升了元素力與少量親密度，但會降低心情與元氣。";
+      }
+
+      s.growth=clamp(s.growth+growthGain);
     }
 
-  } else if(kind==="play"){
-    // 若按下玩耍前心情已滿，觸發「過度玩耍」懲罰。
+  }else if(kind==="play"){
     const overplayed = s.mood >= 100;
 
-    s.hunger=clamp(s.hunger-12);
-    s.energy=clamp(s.energy-20);
-    s.growth=clamp(s.growth+7);
+    s.hunger=clamp(s.hunger-8);
+    s.energy=clamp(s.energy-15);
 
-    if(overplayed){
-      s.bond=clamp(s.bond-10);
-      logEl.textContent="蛋已經玩得很盡興了。繼續玩耍反而讓牠感到厭煩，親密度下降。";
-    } else {
-      s.mood=clamp(s.mood+20);
-      s.bond=clamp(s.bond+12);
-      logEl.textContent="玩耍後，蛋的心情與親密度提高，但元氣明顯下降。";
+    if(beforeElement===0){
+      state.penalty.element += 1;
+      penaltyStage = state.penalty.element;
+      growthGain = penalizedGrowth(4, penaltyStage);
+
+      if(!overplayed) s.mood=clamp(s.mood+10);
+      s.bond=clamp(s.bond-5);
+      s.growth=clamp(s.growth+growthGain);
+
+      logEl.textContent=`元素力已耗盡。愛撫使親密度 -5，成長效率下降為 +${growthGain}。`;
+    }else{
+      growthGain=4;
+      s.growth=clamp(s.growth+growthGain);
+
+      if(overplayed){
+        s.bond=clamp(s.bond-10);
+        logEl.textContent="蛋已經十分放鬆。持續愛撫反而讓牠感到厭煩，親密度下降。";
+      }else{
+        s.mood=clamp(s.mood+10);
+        s.bond=clamp(s.bond+8);
+        logEl.textContent="愛撫提高了心情與親密度，但會消耗元素力與元氣。";
+      }
     }
 
-  } else {
-    // 若按下休息前元氣已滿，這次休息不改變任何數值。
-    const overrested = s.energy >= 100;
+  }else if(kind==="rest"){
+    s.hunger=clamp(s.hunger-5);
+    s.energy=clamp(s.energy+25);
 
-    if(overrested){
-      logEl.textContent="蛋的元氣已經完全恢復，不需要再休息了。";
-    } else {
-      // 一般休息：元氣大量增加、飽食度大量減少、心情微幅增加、親密度不增加。
-      s.hunger=clamp(s.hunger-20);
-      s.mood=clamp(s.mood+4);
-      s.energy=clamp(s.energy+30);
-      s.growth=clamp(s.growth+9);
-      logEl.textContent="休息後，蛋恢復了大量元氣，但飽食度明顯下降。";
+    // 元素力與心情同時為 0 時，各自累積懲罰，但使用較嚴重的一級。
+    let elementStage=0;
+    let moodStage=0;
+
+    if(beforeElement===0){
+      state.penalty.element += 1;
+      elementStage = state.penalty.element;
+      s.bond=clamp(s.bond-5);
+    }
+    if(beforeMood===0){
+      state.penalty.mood += 1;
+      moodStage = state.penalty.mood;
+      // 休息原本親密度 +0，因此心情 0 不需額外修改親密度。
+    }
+
+    if(beforeElement===0 || beforeMood===0){
+      penaltyStage = Math.max(elementStage, moodStage);
+      growthGain = penalizedGrowth(10, penaltyStage);
+      s.growth=clamp(s.growth+growthGain);
+
+      if(beforeElement===0 && beforeMood===0){
+        logEl.textContent=`元素力與心情都已耗盡。親密度 -5，休息的成長效率下降為 +${growthGain}。`;
+      }else if(beforeElement===0){
+        logEl.textContent=`元素力已耗盡。親密度 -5，休息的成長效率下降為 +${growthGain}。`;
+      }else{
+        logEl.textContent=`心情已降到最低。休息無法增加親密度，成長效率下降為 +${growthGain}。`;
+      }
+    }else{
+      growthGain=10;
+      s.growth=clamp(s.growth+growthGain);
+      logEl.textContent="休息恢復了大量元氣，但會消耗元素力。";
     }
   }
+
+  // 只要對應狀態恢復到 >0，該低狀態連續懲罰就重新計算。
+  updatePenaltyRecovery();
 
   state.actions[kind]++;
   save();
@@ -761,6 +1155,9 @@ function isEligible(b,s,a){
       }
       return p.highBond && s.mood>=85 && p.maxAct==="play";
     case "mood_high":
+      if(b.id==="tempestgryph"){
+        return s.mood>=90 && s.bond>=65;
+      }
       return p.highBond && s.mood>=85;
     case "energy_high":
       return p.highBond && s.energy>=85;
@@ -775,29 +1172,39 @@ function isEligible(b,s,a){
       }
       // 陶甲小熊：中高親密＋偏低元氣。
       if(b.id==="claybear"){
-        return s.bond>=60 && s.energy<70;
+        return s.bond>=70 && s.energy<65;
       }
-      // 炎脈山貓：中高親密＋至少三次玩耍＋偏低元氣。
+      // 深潮魟：高親密稀有路線。
+      if(b.id==="abyssray"){
+        return s.bond>=78 && s.energy<75;
+      }
+      // 炎脈山貓：中高親密＋至少三次愛撫＋偏低元氣。
       if(b.id==="volcanolynx"){
         return s.bond>=63 && a.play>=3 && s.energy<70;
       }
       return s.bond>=70;
     case "balanced":
-      // 岳冠鹿：較寬鬆的均衡路線。
+      // 岳冠鹿：維持均衡培育特色，但提高稀有門檻。
       if(b.id==="mountainstag"){
         const counts=[a.feed,a.play,a.rest];
         const maxC=Math.max(...counts), minC=Math.min(...counts);
-        const stagBalanced=counts.every(v=>v>0) && (maxC-minC)<=3;
-        return s.bond>=50 && stagBalanced &&
-               s.hunger>=30 && s.mood>=45 && s.energy>=30;
+        const stagBalanced=counts.every(v=>v>0) && (maxC-minC)<=2;
+        return s.bond>=65 && stagBalanced &&
+               s.hunger>=35 && s.mood>=55 && s.energy>=35;
       }
       return p.highBond && p.balanced &&
              s.hunger>=35 && s.mood>=50 && s.energy>=35;
     case "rest":
+      if(b.id==="bubbleotter"){
+        return s.bond<65 && p.maxAct==="rest" && s.energy>=65;
+      }
       return p.lowBond && p.maxAct==="rest" && s.energy>=65;
     case "energy":
       return p.lowBond && s.energy>=60;
     case "rest_high":
+      if(b.id==="duneturtle"){
+        return s.bond<65 && s.energy>=85 && p.maxAct==="rest";
+      }
       return p.lowBond && s.energy>=85 && p.maxAct==="rest";
     case "bond_low":
       // 低親密型：增加低元氣限制，避免吞掉所有低親密結果。
@@ -831,12 +1238,14 @@ function qualificationWeight(b,s,a){
   if(s.bond>=70 && b.likes==="bond_high") w += 14;
   if(b.id==="sparkmouse" && s.bond>=60 && s.energy<70) w += 10;
   if(b.id==="rainaxolotl" && s.bond>=60 && s.energy<70) w += 10;
-  if(b.id==="claybear" && s.bond>=60 && s.energy<70) w += 10;
+  if(b.id==="claybear" && s.bond>=70 && s.energy<65) w += 6;
+  if(b.id==="bubbleotter" && s.bond<65 && p.maxAct==="rest" && s.energy>=65) w += 8;
+  if(b.id==="duneturtle" && s.bond<65 && s.energy>=85 && p.maxAct==="rest") w += 8;
   if(b.id==="gustfinch" && s.mood>=85 && a.play>=3 && s.bond>=55) w += 10;
   if(b.id==="mountainstag"){
     const counts=[a.feed,a.play,a.rest];
     const maxC=Math.max(...counts), minC=Math.min(...counts);
-    if(counts.every(v=>v>0) && (maxC-minC)<=3) w += 12;
+    if(s.bond>=65 && counts.every(v=>v>0) && (maxC-minC)<=2) w += 4;
   }
   if(b.id==="volcanolynx" && s.bond>=63 && a.play>=3 && s.energy<70) w += 8;
   if(s.bond<50 && b.likes==="bond_low") w += 12;
@@ -846,6 +1255,10 @@ function qualificationWeight(b,s,a){
     if(s.bond>=70) w += 5;
     if(s.bond>=85) w += 7;
   }
+
+  if(b.id==="abyssray") w *= 0.55;
+  if(b.id==="tempestgryph") w *= 0.60;
+  if(b.id==="mountainstag") w *= 0.65;
 
   return Math.max(1,w);
 }
@@ -952,7 +1365,7 @@ const DEX_GROUPS = {
     prismRefs:["prismdrake","lumicorn"]
   },
   forest:{
-    key:"forest", name:"森系圖鑑", icon:"🌿", egg:"岩土蛋",
+    key:"forest", name:"土系圖鑑", icon:"🪨", egg:"岩土蛋",
     regular:["pebblemole","stoneboar","sandfox","claybear","orebeetle","duneturtle","rockgoat","mudhippo"],
     rare:["crystalyak","mountainstag"],
     prismRefs:["noctbat","eclipsecat"]
@@ -1038,11 +1451,30 @@ function dexSectionHtml(group){
 }
 
 function renderDex(){
-  const groups = dexFilter==="all"
-    ? [DEX_GROUPS.fire,DEX_GROUPS.water,DEX_GROUPS.wind,DEX_GROUPS.forest,DEX_GROUPS.prism]
-    : [DEX_GROUPS[dexFilter]].filter(Boolean);
-
-  dexGridEl.innerHTML=groups.map(dexSectionHtml).join("");
+  if(dexFilter==="all"){
+    const allIds = [
+      ...DEX_GROUPS.fire.regular,...DEX_GROUPS.fire.rare,
+      ...DEX_GROUPS.water.regular,...DEX_GROUPS.water.rare,
+      ...DEX_GROUPS.wind.regular,...DEX_GROUPS.wind.rare,
+      ...DEX_GROUPS.forest.regular,...DEX_GROUPS.forest.rare,
+      ...DEX_GROUPS.prism.prism
+    ];
+    const uniqueIds=[...new Set(allIds)];
+    const gotCount=uniqueIds.filter(id=>state.dex.includes(id)).length;
+    const cards=uniqueIds.map(id=>BEASTS.find(b=>b.id===id)).filter(Boolean).map(dexCardHtml).join("");
+    dexGridEl.innerHTML=`
+      <div class="dex-all-head">
+        <div>
+          <h3 class="dex-section-title">全部幻獸</h3>
+          <div class="meta">所有幻獸集中顯示，不再依屬性分區。</div>
+        </div>
+        <div class="dex-progress">總收集進度 ${gotCount} / ${uniqueIds.length}</div>
+      </div>
+      <div class="dex-grid">${cards}</div>`;
+  }else{
+    const group=DEX_GROUPS[dexFilter];
+    dexGridEl.innerHTML=group ? dexSectionHtml(group) : "";
+  }
 
   if(dexTabsEl){
     dexTabsEl.querySelectorAll("[data-dex-filter]").forEach(btn=>{
@@ -1063,18 +1495,22 @@ function resetRun(){
     btn.style.cursor = "";
   });
 
-  state.stage="start"; state.egg=null; state.stats={hunger:60,mood:60,bond:20,energy:60,growth:0}; state.actions={feed:0,play:0,rest:0}; state.last=null; save(); render();
+  state.stage="start"; state.egg=null; state.stats=randomStartStats(); state.actions={feed:0,play:0,rest:0}; state.last=null; save(); render();
 }
 function render(){
+  renderCoins();
   renderEggs();
 
   if(state.stage==="care"){
+    if(dexNewBtnEl) dexNewBtnEl.style.display="";
     show("screen-care");
     renderCare();
   } else if(state.stage==="hatch"){
+    if(dexNewBtnEl) dexNewBtnEl.style.display="";
     show("screen-hatch");
     renderHatch();
   } else if(state.stage==="dex"){
+    if(dexNewBtnEl) dexNewBtnEl.style.display="";
     show("screen-dex");
     renderDex();
   } else {
@@ -1085,6 +1521,7 @@ function render(){
     if(dex){
       dex.classList.remove("hidden");
       dex.removeAttribute("aria-hidden");
+      if(dexNewBtnEl) dexNewBtnEl.style.display="none";
       renderDex();
     }
   }
@@ -1100,6 +1537,62 @@ if(dexTabsEl) dexTabsEl.addEventListener("click",(e)=>{
   dexFilter=btn.dataset.dexFilter || "all";
   renderDex();
 });
+
+if(bootStartBtnEl) bootStartBtnEl.addEventListener("click",resumeGameFromSave);
+if(bootResetBtnEl) bootResetBtnEl.addEventListener("click",clearAllProgress);
+if(musicToggleBtnEl) musicToggleBtnEl.addEventListener("click",async ()=>{
+  await unlockAudio();
+  musicEnabled=!musicEnabled;
+  updateMusicLabel();
+  if(musicEnabled) startMusic(); else stopMusic();
+});
+
+/* 所有按鈕：手機與桌機皆可用的按壓動畫。 */
+function pressOn(btn){
+  if(!btn || btn.disabled) return;
+  btn.classList.add("press-feedback");
+}
+function pressOff(btn){
+  if(!btn) return;
+  setTimeout(()=>btn.classList.remove("press-feedback"),70);
+}
+
+document.addEventListener("touchstart",(e)=>{
+  const btn=e.target.closest && e.target.closest("button");
+  pressOn(btn);
+},{passive:true});
+
+document.addEventListener("touchend",(e)=>{
+  const btn=e.target.closest && e.target.closest("button");
+  pressOff(btn);
+},{passive:true});
+
+document.addEventListener("touchcancel",(e)=>{
+  const btn=e.target.closest && e.target.closest("button");
+  pressOff(btn);
+},{passive:true});
+
+document.addEventListener("mousedown",(e)=>{
+  const btn=e.target.closest && e.target.closest("button");
+  pressOn(btn);
+});
+
+document.addEventListener("mouseup",(e)=>{
+  const btn=e.target.closest && e.target.closest("button");
+  pressOff(btn);
+});
+
+/* 實際操作仍以標準 click 為主，iPhone Safari 最穩定。 */
+document.addEventListener("click",(e)=>{
+  const btn=e.target.closest && e.target.closest("button");
+  if(!btn || btn.disabled) return;
+  // 開頭按鈕已有專屬音效，避免同一次點擊重播兩次。
+  if(btn!==bootStartBtnEl && btn!==bootResetBtnEl){
+    playClickSound();
+  }
+});
+
+updateMusicLabel();
 render();
 </script>
 </body>
